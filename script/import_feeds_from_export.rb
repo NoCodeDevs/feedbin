@@ -25,25 +25,44 @@ added = 0
 skipped = 0
 errors = 0
 
+def try_fetch_feed(url)
+  response = Feedkit::Request.download(url)
+  parsed = response.parse
+  parsed if parsed.present? && parsed.entries.present?
+end
+
 urls.each do |url|
   if Feed.exists?(feed_url: url)
     skipped += 1
     next
   end
-  begin
-    response = Feedkit::Request.download(url)
-    parsed = response.parse
-    if parsed.blank? || parsed.entries.blank?
-      puts "  Skip (no entries): #{url[0..60]}..."
-      errors += 1
-      next
+  parsed = nil
+  last_error = nil
+  urls_to_try = [url]
+  urls_to_try.unshift(url.sub(/\Ahttp:\/\//, "https://")) if url.start_with?("http://")
+  urls_to_try.uniq!
+
+  urls_to_try.each do |try_url|
+    begin
+      parsed = try_fetch_feed(try_url)
+      break if parsed
+    rescue => e
+      last_error = e
     end
-    feed = Feed.create_from_parsed_feed(parsed, entry_limit: entry_limit)
-    feed.update_column(:standalone_request_at, Time.current)
-    added += 1
-    puts "  [#{added}/#{urls.size}] #{feed.title} (#{feed.entries.count} entries)"
-  rescue => e
-    puts "  Error #{url[0..50]}...: #{e.message[0..80]}"
+  end
+
+  if parsed
+    begin
+      feed = Feed.create_from_parsed_feed(parsed, entry_limit: entry_limit)
+      feed.update_column(:standalone_request_at, Time.current)
+      added += 1
+      puts "  [#{added}/#{urls.size}] #{feed.title} (#{feed.entries.count} entries)"
+    rescue => e
+      puts "  Error #{url[0..50]}...: #{e.message[0..80]}"
+      errors += 1
+    end
+  else
+    puts "  Error #{url[0..50]}...: #{last_error&.message&.[](0..80) || 'unknown'}"
     errors += 1
   end
 end

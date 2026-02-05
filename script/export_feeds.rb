@@ -10,6 +10,8 @@
 
 path = Rails.root.join("data", "feed_urls.txt")
 FileUtils.mkdir_p(Rails.root.join("data"))
-urls = Feed.pluck(:feed_url).compact.uniq.sort
+urls = Feed.pluck(:feed_url).compact.uniq
+  .map { |u| u.start_with?("http://") ? u.sub(/\Ahttp:\/\//, "https://") : u }
+  .uniq.sort
 File.write(path, urls.join("\n") + "\n")
 puts "Exported #{urls.size} feed URLs to #{path}"
