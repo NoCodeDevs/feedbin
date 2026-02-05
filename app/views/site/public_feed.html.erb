@@ -122,11 +122,12 @@
       aspect-ratio: 16/10;
     }
 
-    .hero-main img {
+    .hero-main img, .hero-main .hero-placeholder {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
+    .hero-placeholder { background: var(--surface-2); min-height: 200px; }
 
     .hero-main .overlay {
       position: absolute;
@@ -281,12 +282,13 @@
       background: var(--surface-2);
     }
 
-    .card-image img {
+    .card-image img, .card-image .card-placeholder {
       width: 100%;
       height: 100%;
       object-fit: cover;
       transition: transform 0.5s;
     }
+    .card-image .card-placeholder { display: block; min-height: 120px; background: var(--surface-2); }
 
     .card:hover .card-image img { transform: scale(1.08); }
 
@@ -602,7 +604,11 @@
     <div class="hero-grid">
       <% main = hero_entries[0] %>
       <a href="<%= main.url %>" class="hero-main" target="_blank" rel="noopener">
-        <img src="<%= main.image_url %>" alt="" loading="eager">
+        <% if main.image_url.present? %>
+          <img src="<%= main.image_url %>" alt="" loading="eager">
+        <% else %>
+          <div class="hero-placeholder"></div>
+        <% end %>
         <div class="overlay"></div>
         <div class="content">
           <span class="badge"><%= main.feed&.title&.split(/[.\s]/)&.first || 'News' %></span>
@@ -616,7 +622,11 @@
       <div class="hero-side">
         <% hero_entries[1..2].each do |entry| %>
           <a href="<%= entry.url %>" class="hero-card" target="_blank" rel="noopener">
-            <img src="<%= entry.image_url %>" alt="" loading="eager">
+            <% if entry.image_url.present? %>
+              <img src="<%= entry.image_url %>" alt="" loading="eager">
+            <% else %>
+              <div class="hero-placeholder"></div>
+            <% end %>
             <div class="overlay"></div>
             <div class="content">
               <span class="badge"><%= entry.feed&.title&.split(/[.\s]/)&.first %></span>
@@ -632,7 +642,7 @@
   <main class="main">
     <div class="section-header">
       <h2 class="section-title">Latest Stories</h2>
-      <span class="section-title"><%= Entry.where.not(image_url: [nil, '']).count %> articles from <%= Feed.count %> sources</span>
+      <span class="section-title"><%= Entry.count %> articles from <%= Feed.count %> sources</span>
     </div>
     
     <div class="grid">
@@ -640,7 +650,11 @@
         <% plain_summary = ActionController::Base.helpers.strip_tags(entry.summary || entry.content || '').gsub(/\s+/, ' ').strip[0..120] %>
         <a href="<%= entry.url %>" class="card" target="_blank" rel="noopener">
           <div class="card-image">
-            <img src="<%= entry.image_url %>" alt="" loading="lazy" onerror="this.closest('.card').style.display='none'">
+            <% if entry.image_url.present? %>
+              <img src="<%= entry.image_url %>" alt="" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <% else %>
+              <div class="card-placeholder" style="display:block"></div>
+            <% end %>
             <span class="source-badge"><%= entry.feed&.title&.split(/[.\s]/)&.first %></span>
           </div>
           <div class="card-body">

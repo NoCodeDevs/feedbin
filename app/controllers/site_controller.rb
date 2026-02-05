@@ -4,7 +4,6 @@ class SiteController < ApplicationController
 
   def index
     @entries = Entry.includes(:feed)
-                    .where.not(image_url: [nil, ''])
                     .order(published: :desc)
                     .limit(60)
     render "site/public_feed", layout: false
