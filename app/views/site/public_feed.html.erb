@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Feed - Curated News & Insights</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #000000;
+      --surface: #0a0a0a;
+      --surface-2: #141414;
+      --surface-3: #1a1a1a;
+      --text: #ffffff;
+      --text-2: #e5e5e5;
+      --text-3: #a3a3a3;
+      --text-4: #737373;
+      --accent: #7c3aed;
+      --accent-2: #8b5cf6;
+      --border: #262626;
+      --gradient-1: linear-gradient(135deg, #7c3aed 0%, #2563eb 100%);
+      --gradient-2: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Header */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-inner {
+      max-width: 1800px;
+      margin: 0 auto;
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .logo {
+      font-family: 'Newsreader', serif;
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--text);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+
+    .header-center {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .nav-pill {
+      padding: 8px 18px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-3);
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .nav-pill:hover { color: var(--text); background: var(--surface-2); }
+    .nav-pill.active { color: var(--text); background: var(--surface-3); }
+
+    .search-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text-3);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .search-btn:hover { background: var(--surface-3); color: var(--text); }
+    .search-btn svg { width: 18px; height: 18px; }
+
+    /* Hero Section */
+    .hero {
+      max-width: 1800px;
+      margin: 0 auto;
+      padding: 32px 32px 0;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .hero-main {
+      position: relative;
+      border-radius: 20px;
+      overflow: hidden;
+      aspect-ratio: 16/10;
+    }
+
+    .hero-main img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .hero-main .overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 50%, transparent 100%);
+    }
+
+    .hero-main .content {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 32px;
+    }
+
+    .hero-main .badge {
+      display: inline-block;
+      padding: 6px 14px;
+      background: var(--accent);
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 16px;
+    }
+
+    .hero-main h2 {
+      font-family: 'Newsreader', serif;
+      font-size: 36px;
+      font-weight: 500;
+      line-height: 1.2;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-main .meta {
+      font-size: 13px;
+      color: var(--text-3);
+    }
+
+    .hero-main .meta span { margin-right: 16px; }
+
+    .hero-side {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .hero-card {
+      flex: 1;
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .hero-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s;
+    }
+
+    .hero-card:hover img { transform: scale(1.05); }
+
+    .hero-card .overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 60%);
+    }
+
+    .hero-card .content {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 20px;
+    }
+
+    .hero-card .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 10px;
+    }
+
+    .hero-card h3 {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.35;
+    }
+
+    /* Main Grid */
+    .main {
+      max-width: 1800px;
+      margin: 0 auto;
+      padding: 0 32px 80px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-3);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+    }
+
+    /* Card */
+    .card {
+      display: flex;
+      flex-direction: column;
+      background: var(--surface);
+      border-radius: 16px;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.3s, box-shadow 0.3s;
+      border: 1px solid var(--border);
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+
+    .card-image {
+      position: relative;
+      aspect-ratio: 16/10;
+      overflow: hidden;
+      background: var(--surface-2);
+    }
+
+    .card-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s;
+    }
+
+    .card:hover .card-image img { transform: scale(1.08); }
+
+    .card-image .source-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      padding: 5px 12px;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(10px);
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-2);
+    }
+
+    .card-body {
+      padding: 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-category {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent-2);
+      margin-bottom: 10px;
+    }
+
+    .card-title {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.4;
+      margin-bottom: 10px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card:hover .card-title { color: var(--accent-2); }
+
+    .card-excerpt {
+      font-size: 14px;
+      color: var(--text-3);
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-bottom: 16px;
+      flex: 1;
+    }
+
+    .card-meta {
+      font-size: 12px;
+      color: var(--text-4);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* AI Panel Floating */
+    .ai-fab {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 1000;
+    }
+
+    .ai-btn {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: var(--gradient-1);
+      border: none;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 32px rgba(124, 58, 237, 0.4);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .ai-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 12px 40px rgba(124, 58, 237, 0.5);
+    }
+
+    .ai-btn svg { width: 26px; height: 26px; }
+
+    /* AI Modal */
+    .ai-modal {
+      position: fixed;
+      bottom: 100px;
+      right: 24px;
+      width: 400px;
+      max-height: 500px;
+      background: var(--surface);
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      display: none;
+      flex-direction: column;
+      z-index: 999;
+    }
+
+    .ai-modal.open { display: flex; }
+
+    .ai-modal-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .ai-modal-header h3 { font-size: 16px; flex: 1; }
+
+    .ai-modal-close {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--surface-2);
+      border: none;
+      color: var(--text-3);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ai-modal-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .ai-message {
+      display: flex;
+      gap: 12px;
+    }
+
+    .ai-message.user { flex-direction: row-reverse; }
+
+    .ai-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--surface-3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .ai-message.assistant .ai-avatar { background: var(--gradient-1); }
+    .ai-avatar svg { width: 16px; height: 16px; }
+
+    .ai-bubble {
+      max-width: 280px;
+      padding: 12px 16px;
+      border-radius: 16px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .ai-message.user .ai-bubble {
+      background: var(--accent);
+      border-bottom-right-radius: 4px;
+    }
+
+    .ai-message.assistant .ai-bubble {
+      background: var(--surface-3);
+      border-bottom-left-radius: 4px;
+    }
+
+    .ai-modal-input {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 12px;
+    }
+
+    .ai-modal-input input {
+      flex: 1;
+      padding: 12px 16px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 14px;
+      font-family: inherit;
+    }
+
+    .ai-modal-input input::placeholder { color: var(--text-4); }
+    .ai-modal-input input:focus { outline: none; border-color: var(--accent); }
+
+    .ai-send {
+      padding: 12px 20px;
+      background: var(--accent);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .ai-send:hover { background: var(--accent-2); }
+
+    /* Search Modal */
+    .search-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(10px);
+      z-index: 1000;
+      display: none;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 15vh;
+    }
+
+    .search-modal.open { display: flex; }
+
+    .search-box {
+      width: 100%;
+      max-width: 600px;
+      background: var(--surface);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .search-input-wrapper {
+      display: flex;
+      align-items: center;
+      padding: 20px;
+      gap: 16px;
+    }
+
+    .search-input-wrapper svg { width: 24px; height: 24px; color: var(--text-3); }
+
+    .search-input {
+      flex: 1;
+      background: none;
+      border: none;
+      font-size: 20px;
+      color: var(--text);
+      font-family: inherit;
+    }
+
+    .search-input::placeholder { color: var(--text-4); }
+    .search-input:focus { outline: none; }
+
+    /* Responsive */
+    @media (max-width: 1400px) {
+      .grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    @media (max-width: 1000px) {
+      .grid { grid-template-columns: repeat(2, 1fr); }
+      .hero-grid { grid-template-columns: 1fr; }
+      .hero-main { aspect-ratio: 16/9; }
+      .hero-side { flex-direction: row; }
+      .hero-card { aspect-ratio: 1; }
+    }
+
+    @media (max-width: 700px) {
+      .header-inner { padding: 12px 16px; }
+      .header-center { display: none; }
+      .hero, .main { padding-left: 16px; padding-right: 16px; }
+      .grid { grid-template-columns: 1fr; gap: 16px; }
+      .hero-side { flex-direction: column; }
+      .hero-main h2 { font-size: 24px; }
+      .ai-modal { width: calc(100% - 32px); right: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <a href="/" class="logo">The Feed</a>
+      <nav class="header-center">
+        <a href="/" class="nav-pill active">All</a>
+        <a href="/search?category=Tech" class="nav-pill">Tech</a>
+        <a href="/search?category=News" class="nav-pill">News</a>
+        <a href="/search?category=Gaming" class="nav-pill">Gaming</a>
+        <a href="/search?category=Business" class="nav-pill">Business</a>
+        <a href="/search?category=Design" class="nav-pill">Design</a>
+        <a href="/search?category=Culture" class="nav-pill">Culture</a>
+        <a href="/search?category=Science" class="nav-pill">Science</a>
+        <a href="/search?category=AI/ML" class="nav-pill">AI</a>
+      </nav>
+      <button class="search-btn" onclick="toggleSearch()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <% hero_entries = @entries.first(3) %>
+  <% if hero_entries.any? %>
+  <section class="hero">
+    <div class="hero-grid">
+      <% main = hero_entries[0] %>
+      <a href="<%= main.url %>" class="hero-main" target="_blank" rel="noopener">
+        <img src="<%= main.image_url %>" alt="" loading="eager">
+        <div class="overlay"></div>
+        <div class="content">
+          <span class="badge"><%= main.feed&.title&.split(/[.\s]/)&.first || 'News' %></span>
+          <h2><%= main.title %></h2>
+          <div class="meta">
+            <span><%= time_ago_in_words(main.published || main.created_at) %> ago</span>
+          </div>
+        </div>
+      </a>
+      
+      <div class="hero-side">
+        <% hero_entries[1..2].each do |entry| %>
+          <a href="<%= entry.url %>" class="hero-card" target="_blank" rel="noopener">
+            <img src="<%= entry.image_url %>" alt="" loading="eager">
+            <div class="overlay"></div>
+            <div class="content">
+              <span class="badge"><%= entry.feed&.title&.split(/[.\s]/)&.first %></span>
+              <h3><%= entry.title %></h3>
+            </div>
+          </a>
+        <% end %>
+      </div>
+    </div>
+  </section>
+  <% end %>
+
+  <main class="main">
+    <div class="section-header">
+      <h2 class="section-title">Latest Stories</h2>
+      <span class="section-title"><%= Entry.where.not(image_url: [nil, '']).count %> articles from <%= Feed.count %> sources</span>
+    </div>
+    
+    <div class="grid">
+      <% @entries.drop(3).each do |entry| %>
+        <% plain_summary = ActionController::Base.helpers.strip_tags(entry.summary || entry.content || '').gsub(/\s+/, ' ').strip[0..120] %>
+        <a href="<%= entry.url %>" class="card" target="_blank" rel="noopener">
+          <div class="card-image">
+            <img src="<%= entry.image_url %>" alt="" loading="lazy" onerror="this.closest('.card').style.display='none'">
+            <span class="source-badge"><%= entry.feed&.title&.split(/[.\s]/)&.first %></span>
+          </div>
+          <div class="card-body">
+            <% if entry.category.present? %>
+              <div class="card-category"><%= entry.category %></div>
+            <% end %>
+            <h3 class="card-title"><%= entry.title %></h3>
+            <% if plain_summary.present? %>
+              <p class="card-excerpt"><%= plain_summary %>...</p>
+            <% end %>
+            <div class="card-meta">
+              <span><%= time_ago_in_words(entry.published || entry.created_at) %> ago</span>
+            </div>
+          </div>
+        </a>
+      <% end %>
+    </div>
+  </main>
+
+  <!-- AI Chat FAB -->
+  <div class="ai-fab">
+    <button class="ai-btn" onclick="toggleAI()">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+    </button>
+  </div>
+
+  <!-- AI Modal -->
+  <div class="ai-modal" id="aiModal">
+    <div class="ai-modal-header">
+      <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+      <h3>AI Assistant</h3>
+      <button class="ai-modal-close" onclick="toggleAI()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="ai-modal-body" id="aiMessages">
+      <div class="ai-message assistant">
+        <div class="ai-avatar">
+          <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+        </div>
+        <div class="ai-bubble">Hi! Ask me anything about the news. Try "What's happening in AI?" or "Summarize tech news"</div>
+      </div>
+    </div>
+    <div class="ai-modal-input">
+      <input type="text" id="aiInput" placeholder="Ask about the news..." onkeypress="if(event.key==='Enter')sendAI()">
+      <button class="ai-send" onclick="sendAI()">Send</button>
+    </div>
+  </div>
+
+  <!-- Search Modal -->
+  <div class="search-modal" id="searchModal" onclick="if(event.target===this)toggleSearch()">
+    <div class="search-box">
+      <form action="/search" method="get" class="search-input-wrapper">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <input type="text" name="q" class="search-input" placeholder="Search articles..." autofocus>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function toggleAI() {
+      document.getElementById('aiModal').classList.toggle('open');
+    }
+
+    function toggleSearch() {
+      const modal = document.getElementById('searchModal');
+      modal.classList.toggle('open');
+      if (modal.classList.contains('open')) {
+        modal.querySelector('input').focus();
+      }
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.getElementById('searchModal').classList.remove('open');
+        document.getElementById('aiModal').classList.remove('open');
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        toggleSearch();
+      }
+    });
+
+    let chatHistory = [];
+
+    async function sendAI() {
+      const input = document.getElementById('aiInput');
+      const messages = document.getElementById('aiMessages');
+      const message = input.value.trim();
+      if (!message) return;
+
+      // Add user message
+      messages.innerHTML += `
+        <div class="ai-message user">
+          <div class="ai-avatar"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>
+          <div class="ai-bubble">${message}</div>
+        </div>
+      `;
+      input.value = '';
+      messages.scrollTop = messages.scrollHeight;
+
+      try {
+        const response = await fetch('/ai/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ q: message, history: chatHistory })
+        });
+        const data = await response.json();
+        
+        if (data.answer) {
+          chatHistory.push({ role: 'user', content: message });
+          chatHistory.push({ role: 'assistant', content: data.answer });
+          
+          messages.innerHTML += `
+            <div class="ai-message assistant">
+              <div class="ai-avatar"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></div>
+              <div class="ai-bubble">${data.answer}</div>
+            </div>
+          `;
+        } else {
+          const errorMsg = data.error || 'Add ANTHROPIC_API_KEY or OPENAI_API_KEY to your .env file and restart the server.';
+          messages.innerHTML += `
+            <div class="ai-message assistant">
+              <div class="ai-avatar"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></div>
+              <div class="ai-bubble">${errorMsg}</div>
+            </div>
+          `;
+        }
+      } catch (err) {
+        messages.innerHTML += `
+          <div class="ai-message assistant">
+            <div class="ai-avatar"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></div>
+            <div class="ai-bubble">Something went wrong. Please try again.</div>
+          </div>
+        `;
+      }
+      messages.scrollTop = messages.scrollHeight;
+    }
+  </script>
+</body>
+</html>

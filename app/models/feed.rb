@@ -98,12 +98,20 @@ class Feed < ApplicationRecord
     icon_options[base]
   end
 
-  def self.create_from_parsed_feed(parsed_feed)
+  def self.create_from_parsed_feed(parsed_feed, entry_limit: nil)
     record = parsed_feed.to_feed
+    entries = parsed_feed.entries
+    entries = entries.first(entry_limit) if entry_limit
     create_with(record).create_or_find_by!(feed_url: record[:feed_url]).tap do |new_feed|
-      parsed_feed.entries.each do |parsed_entry|
+      entries.each do |parsed_entry|
         entry_hash = parsed_entry.to_entry
-        new_feed.entries.create_with(entry_hash).create_or_find_by(public_id: entry_hash[:public_id])
+        entry = if entry_hash[:url].present?
+          new_feed.entries.find_or_initialize_by(url: entry_hash[:url])
+        else
+          new_feed.entries.find_or_initialize_by(public_id: entry_hash[:public_id])
+        end
+        entry.assign_attributes(entry_hash)
+        entry.save!
       end
       # for micropost feeds
       if parsed_feed.entries.filter_map(&:title).blank?

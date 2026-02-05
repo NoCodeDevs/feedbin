@@ -12,10 +12,13 @@ module FeedCrawler
     end
 
     def receive_entries(items, feed)
+      # Look up existing entries by public_id and by (feed_id, url) to avoid duplicates
       public_ids = items.map { |entry| entry["public_id"] }
-      entries = Entry.where(public_id: public_ids).index_by(&:public_id)
+      entries_by_public_id = Entry.where(public_id: public_ids).index_by(&:public_id)
+      urls = items.filter_map { |item| item["url"] }.compact
+      entries_by_url = urls.any? ? Entry.where(feed_id: feed.id, url: urls).index_by(&:url) : {}
       items.each do |item|
-        entry = entries[item["public_id"]]
+        entry = entries_by_public_id[item["public_id"]] || (item["url"].present? && entries_by_url[item["url"]])
         update = item.delete("update")
         if entry
           EntryUpdate.create!(item, entry)
@@ -41,9 +44,15 @@ module FeedCrawler
       if alternate_exists?(item)
         Librato.increment("entry.alternate_exists")
       else
-        feed.entries.create!(item)
-        Librato.increment("entry.create")
-        Sidekiq.logger.info "Creating entry=#{item["public_id"]}"
+        entry = if item["url"].present?
+          feed.entries.find_or_initialize_by(url: item["url"])
+        else
+          feed.entries.find_or_initialize_by(public_id: item["public_id"])
+        end
+        entry.assign_attributes(item)
+        entry.save!
+        Librato.increment("entry.create") if entry.previously_new_record?
+        Sidekiq.logger.info "Creating entry=#{item["public_id"]}" if entry.previously_new_record?
       end
     end
 

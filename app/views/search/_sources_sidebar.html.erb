@@ -1,0 +1,23 @@
+<% # locals: sources (array with id, title, entries_count), feed_id (current), smart_feed (bool), prompt (for smart_feed links) %>
+<aside class="sources-sidebar">
+  <h3 class="sources-sidebar-title">Sources</h3>
+  <nav class="sources-nav">
+    <% base = smart_feed ? "/search/smart_feed" : "/" %>
+    <% all_params = smart_feed ? (prompt.present? ? "prompt=#{ERB::Util.url_encode(prompt)}" : nil) : [(@category.present? ? "category=#{ERB::Util.url_encode(@category)}" : nil), (@query.present? ? "q=#{ERB::Util.url_encode(@query)}" : nil)].compact.join("&") %>
+    <% all_url = all_params.present? ? "#{base}?#{all_params}" : base %>
+    <a href="<%= all_url %>" class="source-item <%= 'active' if feed_id.blank? %>">
+      <span class="source-name">All sources</span>
+    </a>
+    <% Array(sources).each do |source| %>
+      <% src_params = ["feed_id=#{source.id}"] %>
+      <% src_params << "prompt=#{ERB::Util.url_encode(prompt)}" if smart_feed && prompt.present? %>
+      <% src_params << "category=#{ERB::Util.url_encode(@category)}" if !smart_feed && @category.present? %>
+      <% src_params << "q=#{ERB::Util.url_encode(@query)}" if !smart_feed && @query.present? %>
+      <% source_url = "#{base}?#{src_params.join('&')}" %>
+      <a href="<%= source_url %>" class="source-item <%= 'active' if feed_id.to_s == source.id.to_s %>">
+        <span class="source-name" title="<%= source.title %>"><%= truncate(source.title, length: 32) %></span>
+        <span class="source-count"><%= source.entries_count %></span>
+      </a>
+    <% end %>
+  </nav>
+</aside>

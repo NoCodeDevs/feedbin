@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opml version="2.0">
+  <head><title>Major Publications</title></head>
+  <body>
+    <!-- Tech & Gadgets -->
+    <outline title="The Verge" xmlUrl="https://www.theverge.com/rss/index.xml" htmlUrl="https://www.theverge.com"/>
+    <outline title="Wired" xmlUrl="https://www.wired.com/feed/rss" htmlUrl="https://www.wired.com"/>
+    <outline title="Ars Technica" xmlUrl="https://feeds.arstechnica.com/arstechnica/index" htmlUrl="https://arstechnica.com"/>
+    <outline title="TechCrunch" xmlUrl="https://techcrunch.com/feed/" htmlUrl="https://techcrunch.com"/>
+    <outline title="Engadget" xmlUrl="https://www.engadget.com/rss.xml" htmlUrl="https://www.engadget.com"/>
+    <outline title="MIT Technology Review" xmlUrl="https://www.technologyreview.com/feed/" htmlUrl="https://www.technologyreview.com"/>
+    <outline title="Gizmodo" xmlUrl="https://gizmodo.com/rss" htmlUrl="https://gizmodo.com"/>
+    <outline title="CNET" xmlUrl="https://www.cnet.com/rss/news/" htmlUrl="https://www.cnet.com"/>
+    <outline title="Mashable" xmlUrl="https://mashable.com/feeds/rss/all" htmlUrl="https://mashable.com"/>
+    <outline title="VentureBeat" xmlUrl="https://venturebeat.com/feed/" htmlUrl="https://venturebeat.com"/>
+    
+    <!-- News -->
+    <outline title="BBC News" xmlUrl="https://feeds.bbci.co.uk/news/rss.xml" htmlUrl="https://www.bbc.com/news"/>
+    <outline title="BBC Technology" xmlUrl="https://feeds.bbci.co.uk/news/technology/rss.xml" htmlUrl="https://www.bbc.com/news/technology"/>
+    <outline title="NPR" xmlUrl="https://feeds.npr.org/1001/rss.xml" htmlUrl="https://www.npr.org"/>
+    <outline title="Reuters" xmlUrl="https://www.reutersagency.com/feed/" htmlUrl="https://www.reuters.com"/>
+    <outline title="The Guardian" xmlUrl="https://www.theguardian.com/international/rss" htmlUrl="https://www.theguardian.com"/>
+    <outline title="The Guardian Tech" xmlUrl="https://www.theguardian.com/uk/technology/rss" htmlUrl="https://www.theguardian.com/technology"/>
+    <outline title="Al Jazeera" xmlUrl="https://www.aljazeera.com/xml/rss/all.xml" htmlUrl="https://www.aljazeera.com"/>
+    <outline title="ABC News" xmlUrl="https://abcnews.go.com/abcnews/topstories" htmlUrl="https://abcnews.go.com"/>
+    <outline title="CBS News" xmlUrl="https://www.cbsnews.com/latest/rss/main" htmlUrl="https://www.cbsnews.com"/>
+    <outline title="NBC News" xmlUrl="https://feeds.nbcnews.com/nbcnews/public/news" htmlUrl="https://www.nbcnews.com"/>
+    
+    <!-- Business & Finance -->
+    <outline title="Bloomberg" xmlUrl="https://feeds.bloomberg.com/markets/news.rss" htmlUrl="https://www.bloomberg.com"/>
+    <outline title="Forbes" xmlUrl="https://www.forbes.com/innovation/feed/" htmlUrl="https://www.forbes.com"/>
+    <outline title="Business Insider" xmlUrl="https://www.businessinsider.com/rss" htmlUrl="https://www.businessinsider.com"/>
+    <outline title="Fortune" xmlUrl="https://fortune.com/feed/" htmlUrl="https://fortune.com"/>
+    <outline title="Inc." xmlUrl="https://www.inc.com/rss" htmlUrl="https://www.inc.com"/>
+    <outline title="Fast Company" xmlUrl="https://www.fastcompany.com/latest/rss" htmlUrl="https://www.fastcompany.com"/>
+    <outline title="Harvard Business Review" xmlUrl="https://hbr.org/resources/images/hbr_rss_feed.xml" htmlUrl="https://hbr.org"/>
+    <outline title="Entrepreneur" xmlUrl="https://www.entrepreneur.com/latest.rss" htmlUrl="https://www.entrepreneur.com"/>
+    <outline title="CNBC" xmlUrl="https://www.cnbc.com/id/100003114/device/rss/rss.html" htmlUrl="https://www.cnbc.com"/>
+    <outline title="MarketWatch" xmlUrl="https://feeds.marketwatch.com/marketwatch/topstories/" htmlUrl="https://www.marketwatch.com"/>
+    
+    <!-- Science -->
+    <outline title="Scientific American" xmlUrl="https://rss.sciam.com/ScientificAmerican-Global" htmlUrl="https://www.scientificamerican.com"/>
+    <outline title="Nature" xmlUrl="https://www.nature.com/nature.rss" htmlUrl="https://www.nature.com"/>
+    <outline title="Science Daily" xmlUrl="https://www.sciencedaily.com/rss/all.xml" htmlUrl="https://www.sciencedaily.com"/>
+    <outline title="Space.com" xmlUrl="https://www.space.com/feeds/all" htmlUrl="https://www.space.com"/>
+    <outline title="NASA" xmlUrl="https://www.nasa.gov/rss/dyn/breaking_news.rss" htmlUrl="https://www.nasa.gov"/>
+    <outline title="Phys.org" xmlUrl="https://phys.org/rss-feed/" htmlUrl="https://phys.org"/>
+    <outline title="New Scientist" xmlUrl="https://www.newscientist.com/feed/home/" htmlUrl="https://www.newscientist.com"/>
+    <outline title="Live Science" xmlUrl="https://www.livescience.com/feeds/all" htmlUrl="https://www.livescience.com"/>
+    <outline title="Popular Science" xmlUrl="https://www.popsci.com/feed/" htmlUrl="https://www.popsci.com"/>
+    <outline title="Smithsonian" xmlUrl="https://www.smithsonianmag.com/rss/latest_articles/" htmlUrl="https://www.smithsonianmag.com"/>
+    
+    <!-- AI & Data -->
+    <outline title="OpenAI Blog" xmlUrl="https://openai.com/blog/rss/" htmlUrl="https://openai.com/blog"/>
+    <outline title="Google AI Blog" xmlUrl="https://blog.google/technology/ai/rss/" htmlUrl="https://blog.google/technology/ai/"/>
+    <outline title="Meta AI" xmlUrl="https://ai.meta.com/blog/rss/" htmlUrl="https://ai.meta.com/blog/"/>
+    <outline title="DeepMind" xmlUrl="https://deepmind.google/blog/rss.xml" htmlUrl="https://deepmind.google/blog/"/>
+    <outline title="Towards Data Science" xmlUrl="https://towardsdatascience.com/feed" htmlUrl="https://towardsdatascience.com"/>
+    <outline title="KDnuggets" xmlUrl="https://www.kdnuggets.com/feed" htmlUrl="https://www.kdnuggets.com"/>
+    <outline title="Machine Learning Mastery" xmlUrl="https://machinelearningmastery.com/feed/" htmlUrl="https://machinelearningmastery.com"/>
+    <outline title="Analytics Vidhya" xmlUrl="https://www.analyticsvidhya.com/feed/" htmlUrl="https://www.analyticsvidhya.com"/>
+    <outline title="Data Science Central" xmlUrl="https://www.datasciencecentral.com/feed/" htmlUrl="https://www.datasciencecentral.com"/>
+    <outline title="The AI Blog" xmlUrl="https://blogs.microsoft.com/ai/feed/" htmlUrl="https://blogs.microsoft.com/ai/"/>
+    
+    <!-- Design & Creativity -->
+    <outline title="Dezeen" xmlUrl="https://www.dezeen.com/feed/" htmlUrl="https://www.dezeen.com"/>
+    <outline title="Core77" xmlUrl="https://www.core77.com/rss" htmlUrl="https://www.core77.com"/>
+    <outline title="Design Milk" xmlUrl="https://design-milk.com/feed/" htmlUrl="https://design-milk.com"/>
+    <outline title="Creative Bloq" xmlUrl="https://www.creativebloq.com/feeds.xml" htmlUrl="https://www.creativebloq.com"/>
+    <outline title="It's Nice That" xmlUrl="https://www.itsnicethat.com/rss" htmlUrl="https://www.itsnicethat.com"/>
+    <outline title="Behance" xmlUrl="https://www.behance.net/feeds/projects" htmlUrl="https://www.behance.net"/>
+    <outline title="Dribbble" xmlUrl="https://dribbble.com/shots/popular.rss" htmlUrl="https://dribbble.com"/>
+    <outline title="Smashing Magazine" xmlUrl="https://www.smashingmagazine.com/feed/" htmlUrl="https://www.smashingmagazine.com"/>
+    <outline title="CSS-Tricks" xmlUrl="https://css-tricks.com/feed/" htmlUrl="https://css-tricks.com"/>
+    <outline title="A List Apart" xmlUrl="https://alistapart.com/main/feed/" htmlUrl="https://alistapart.com"/>
+    
+    <!-- Culture & Lifestyle -->
+    <outline title="The Atlantic" xmlUrl="https://www.theatlantic.com/feed/all/" htmlUrl="https://www.theatlantic.com"/>
+    <outline title="The New Yorker" xmlUrl="https://www.newyorker.com/feed/everything" htmlUrl="https://www.newyorker.com"/>
+    <outline title="Slate" xmlUrl="https://slate.com/feeds/all.rss" htmlUrl="https://slate.com"/>
+    <outline title="Vox" xmlUrl="https://www.vox.com/rss/index.xml" htmlUrl="https://www.vox.com"/>
+    <outline title="Quartz" xmlUrl="https://qz.com/feed/" htmlUrl="https://qz.com"/>
+    <outline title="The Conversation" xmlUrl="https://theconversation.com/articles.atom" htmlUrl="https://theconversation.com"/>
+    <outline title="Longreads" xmlUrl="https://longreads.com/feed/" htmlUrl="https://longreads.com"/>
+    <outline title="Aeon" xmlUrl="https://aeon.co/feed.rss" htmlUrl="https://aeon.co"/>
+    <outline title="Nautilus" xmlUrl="https://nautil.us/feed/" htmlUrl="https://nautil.us"/>
+    <outline title="Brain Pickings" xmlUrl="https://www.themarginalian.org/feed/" htmlUrl="https://www.themarginalian.org"/>
+    
+    <!-- Gaming & Entertainment -->
+    <outline title="IGN" xmlUrl="https://feeds.feedburner.com/ign/all" htmlUrl="https://www.ign.com"/>
+    <outline title="Kotaku" xmlUrl="https://kotaku.com/rss" htmlUrl="https://kotaku.com"/>
+    <outline title="Polygon" xmlUrl="https://www.polygon.com/rss/index.xml" htmlUrl="https://www.polygon.com"/>
+    <outline title="GameSpot" xmlUrl="https://www.gamespot.com/feeds/mashup/" htmlUrl="https://www.gamespot.com"/>
+    <outline title="PC Gamer" xmlUrl="https://www.pcgamer.com/rss/" htmlUrl="https://www.pcgamer.com"/>
+    <outline title="Rock Paper Shotgun" xmlUrl="https://www.rockpapershotgun.com/feed" htmlUrl="https://www.rockpapershotgun.com"/>
+    <outline title="Eurogamer" xmlUrl="https://www.eurogamer.net/feed" htmlUrl="https://www.eurogamer.net"/>
+    <outline title="The Verge Gaming" xmlUrl="https://www.theverge.com/games/rss/index.xml" htmlUrl="https://www.theverge.com/games"/>
+    <outline title="GamesRadar" xmlUrl="https://www.gamesradar.com/all-platforms/news/rss" htmlUrl="https://www.gamesradar.com"/>
+    <outline title="Destructoid" xmlUrl="https://www.destructoid.com/feed/" htmlUrl="https://www.destructoid.com"/>
+    
+    <!-- Developer & Programming -->
+    <outline title="Hacker Noon" xmlUrl="https://hackernoon.com/feed" htmlUrl="https://hackernoon.com"/>
+    <outline title="Dev.to" xmlUrl="https://dev.to/feed" htmlUrl="https://dev.to"/>
+    <outline title="freeCodeCamp" xmlUrl="https://www.freecodecamp.org/news/rss/" htmlUrl="https://www.freecodecamp.org"/>
+    <outline title="LogRocket" xmlUrl="https://blog.logrocket.com/feed/" htmlUrl="https://blog.logrocket.com"/>
+    <outline title="CSS-Tricks" xmlUrl="https://css-tricks.com/feed/" htmlUrl="https://css-tricks.com"/>
+    <outline title="Scotch.io" xmlUrl="https://scotch.io/feed" htmlUrl="https://scotch.io"/>
+    <outline title="SitePoint" xmlUrl="https://www.sitepoint.com/feed/" htmlUrl="https://www.sitepoint.com"/>
+    <outline title="The GitHub Blog" xmlUrl="https://github.blog/feed/" htmlUrl="https://github.blog"/>
+    <outline title="Stack Overflow Blog" xmlUrl="https://stackoverflow.blog/feed/" htmlUrl="https://stackoverflow.blog"/>
+    <outline title="InfoQ" xmlUrl="https://www.infoq.com/feed/" htmlUrl="https://www.infoq.com"/>
+    
+    <!-- Photography & Visual -->
+    <outline title="PetaPixel" xmlUrl="https://petapixel.com/feed/" htmlUrl="https://petapixel.com"/>
+    <outline title="Fstoppers" xmlUrl="https://fstoppers.com/rss.xml" htmlUrl="https://fstoppers.com"/>
+    <outline title="DPReview" xmlUrl="https://www.dpreview.com/feeds/news.xml" htmlUrl="https://www.dpreview.com"/>
+    <outline title="Colossal" xmlUrl="https://www.thisiscolossal.com/feed/" htmlUrl="https://www.thisiscolossal.com"/>
+    <outline title="Bored Panda" xmlUrl="https://www.boredpanda.com/feed/" htmlUrl="https://www.boredpanda.com"/>
+  </body>
+</opml>

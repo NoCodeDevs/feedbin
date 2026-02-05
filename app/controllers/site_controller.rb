@@ -1,17 +1,13 @@
 class SiteController < ApplicationController
-  skip_before_action :authorize, only: [:index, :manifest, :service_worker, :auto_sign_in]
+  skip_before_action :authorize
   skip_before_action :verify_authenticity_token, only: [:service_worker]
-  before_action :check_user, if: :signed_in?
 
   def index
-    if signed_in?
-      clear_location
-      logged_in
-    else
-      render_file_or("home/index.html", :ok) {
-        redirect_to login_url
-      }
-    end
+    @entries = Entry.includes(:feed)
+                    .where.not(image_url: [nil, ''])
+                    .order(published: :desc)
+                    .limit(60)
+    render "site/public_feed", layout: false
   end
 
   def subscribe

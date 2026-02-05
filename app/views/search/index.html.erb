@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= @query.present? ? "Search: #{@query}" : @category.present? ? @category : "Search" %> - The Feed</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #000000;
+      --surface: #0a0a0a;
+      --surface-2: #141414;
+      --surface-3: #1a1a1a;
+      --text: #ffffff;
+      --text-2: #e5e5e5;
+      --text-3: #a3a3a3;
+      --text-4: #737373;
+      --accent: #7c3aed;
+      --accent-2: #8b5cf6;
+      --border: #262626;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .logo {
+      font-family: 'Newsreader', serif;
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .search-form {
+      flex: 1;
+      max-width: 500px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 16px 12px 44px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 15px;
+      font-family: inherit;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23737373'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: 14px center;
+      background-size: 18px;
+    }
+
+    .search-input::placeholder { color: var(--text-4); }
+    .search-input:focus { outline: none; border-color: var(--accent); }
+
+    .main {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 32px;
+    }
+
+    .page-header {
+      margin-bottom: 32px;
+    }
+
+    .page-title {
+      font-family: 'Newsreader', serif;
+      font-size: 42px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+
+    .page-subtitle {
+      font-size: 15px;
+      color: var(--text-3);
+    }
+
+    .categories {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+
+    .category-pill {
+      padding: 8px 18px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-3);
+      text-decoration: none;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+
+    .category-pill:hover { color: var(--text); background: var(--surface-3); }
+    .category-pill.active { color: white; background: var(--accent); border-color: var(--accent); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .card {
+      display: flex;
+      flex-direction: column;
+      background: var(--surface);
+      border-radius: 16px;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.3s, box-shadow 0.3s;
+      border: 1px solid var(--border);
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+
+    .card-image {
+      position: relative;
+      aspect-ratio: 16/10;
+      overflow: hidden;
+      background: var(--surface-2);
+    }
+
+    .card-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s;
+    }
+
+    .card:hover .card-image img { transform: scale(1.08); }
+
+    .card-image .badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      padding: 5px 12px;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(10px);
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-2);
+    }
+
+    .card-body {
+      padding: 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-category {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent-2);
+      margin-bottom: 8px;
+    }
+
+    .card-title {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.4;
+      margin-bottom: 8px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card:hover .card-title { color: var(--accent-2); }
+
+    .card-excerpt {
+      font-size: 14px;
+      color: var(--text-3);
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      flex: 1;
+    }
+
+    .card-meta {
+      font-size: 12px;
+      color: var(--text-4);
+      margin-top: 12px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 80px 20px;
+    }
+
+    .empty-state h2 {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .empty-state p {
+      color: var(--text-3);
+    }
+
+    .search-layout {
+      display: flex;
+      max-width: 1600px;
+      margin: 0 auto;
+      min-height: calc(100vh - 65px);
+    }
+    .sources-sidebar {
+      width: 260px;
+      flex-shrink: 0;
+      padding: 24px 0 24px 24px;
+      border-right: 1px solid var(--border);
+      background: var(--surface);
+      position: sticky;
+      top: 65px;
+      align-self: flex-start;
+      max-height: calc(100vh - 65px);
+      overflow-y: auto;
+    }
+    .sources-sidebar-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-4);
+      margin-bottom: 12px;
+      padding: 0 12px;
+    }
+    .sources-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .source-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      color: var(--text-2);
+      text-decoration: none;
+      font-size: 14px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .source-item:hover {
+      background: var(--surface-2);
+      color: var(--text);
+    }
+    .source-item.active {
+      background: rgba(124, 58, 237, 0.2);
+      color: var(--accent-2);
+    }
+    .source-name {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .source-count {
+      flex-shrink: 0;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-4);
+    }
+    .source-item.active .source-count { color: var(--accent-2); }
+    .search-main { flex: 1; min-width: 0; }
+
+    .add-feed-btn {
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-2);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      text-decoration: none;
+      font-family: inherit;
+    }
+    .add-feed-btn:hover { background: var(--surface-3); color: var(--text); }
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 440px;
+      width: 90%;
+    }
+    .modal-box h3 { font-size: 18px; margin-bottom: 16px; }
+    .modal-box input[type="url"] {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface-2);
+      color: var(--text);
+      font-size: 15px;
+      margin-bottom: 12px;
+    }
+    .modal-box .form-actions { display: flex; gap: 10px; justify-content: flex-end; }
+    .modal-box .form-actions button { padding: 10px 18px; border-radius: 10px; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .modal-box .form-actions button[type="submit"] { background: var(--accent); color: white; border: none; }
+    .modal-box .form-actions button[type="button"] { background: var(--surface-2); color: var(--text-2); border: 1px solid var(--border); }
+    .modal-box .feed-request-message { margin-top: 14px; font-size: 14px; min-height: 20px; }
+    .modal-box .feed-request-message.success { color: var(--accent-2); }
+    .modal-box .feed-request-message.error { color: #f87171; }
+
+    .day-section { margin-bottom: 40px; }
+    .day-heading {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-4);
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .infinite-sentinel {
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-4);
+      font-size: 14px;
+    }
+    .infinite-sentinel.loading { color: var(--accent-2); }
+    .infinite-sentinel.done { display: none; }
+
+    @media (max-width: 1000px) {
+      .grid { grid-template-columns: repeat(2, 1fr); }
+      .sources-sidebar { width: 220px; }
+    }
+
+    @media (max-width: 768px) {
+      .search-layout { flex-direction: column; }
+      .sources-sidebar {
+        width: 100%;
+        padding: 16px 24px;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        position: static;
+        max-height: none;
+        overflow-y: visible;
+      }
+      .sources-nav { flex-direction: row; flex-wrap: wrap; gap: 8px; }
+      .source-item { flex: 1; min-width: 140px; }
+    }
+
+    @media (max-width: 600px) {
+      .header-inner { padding: 12px 16px; }
+      .main { padding: 24px 16px; }
+      .grid { grid-template-columns: 1fr; }
+      .page-title { font-size: 32px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <a href="/" class="logo">The Feed</a>
+      <form action="/search/smart_feed" method="get" class="search-form">
+        <input type="text" name="prompt" class="search-input" value="<%= @query %>" placeholder="Describe what you want to see..." autofocus>
+      </form>
+      <button type="button" class="add-feed-btn" id="add-feed-open">Add feed</button>
+    </div>
+  </header>
+
+  <div class="modal-overlay" id="add-feed-modal">
+    <div class="modal-box">
+      <h3>Add a feed</h3>
+      <p style="font-size: 14px; color: var(--text-3); margin-bottom: 14px;">Enter the feed URL (RSS or Atom). We’ll validate it before adding.</p>
+      <form id="add-feed-form">
+        <input type="url" name="url" id="add-feed-url" placeholder="https://example.com/feed.xml" required>
+        <div class="form-actions">
+          <button type="button" id="add-feed-cancel">Cancel</button>
+          <button type="submit">Add feed</button>
+        </div>
+        <div class="feed-request-message" id="add-feed-message"></div>
+      </form>
+    </div>
+  </div>
+  <script>
+    (function() {
+      var openBtn = document.getElementById('add-feed-open');
+      var modal = document.getElementById('add-feed-modal');
+      var cancelBtn = document.getElementById('add-feed-cancel');
+      var form = document.getElementById('add-feed-form');
+      var messageEl = document.getElementById('add-feed-message');
+      var urlInput = document.getElementById('add-feed-url');
+      function openModal() { modal.classList.add('open'); urlInput.focus(); }
+      function closeModal() { modal.classList.remove('open'); messageEl.textContent = ''; }
+      openBtn.addEventListener('click', openModal);
+      cancelBtn.addEventListener('click', closeModal);
+      modal.addEventListener('click', function(e) { if (e.target === modal) closeModal(); });
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        messageEl.textContent = 'Checking...';
+        messageEl.className = 'feed-request-message';
+        fetch('/feed_requests', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '' },
+          body: JSON.stringify({ url: urlInput.value.trim() })
+        }).then(function(r) { return r.json().then(function(data) { return { ok: r.ok, data: data }; }); })
+          .then(function(result) {
+            if (result.data.error) {
+              messageEl.textContent = result.data.error;
+              messageEl.className = 'feed-request-message error';
+            } else {
+              messageEl.textContent = result.data.message || 'Feed added.';
+              messageEl.className = 'feed-request-message success';
+              urlInput.value = '';
+              setTimeout(closeModal, 2000);
+            }
+          })
+          .catch(function() {
+            messageEl.textContent = 'Something went wrong. Try again.';
+            messageEl.className = 'feed-request-message error';
+          });
+      });
+    })();
+  </script>
+
+  <div class="search-layout">
+    <%= render "sources_sidebar", sources: @sources, feed_id: @feed_id, smart_feed: false, prompt: nil %>
+    <main class="main search-main">
+    <div class="page-header">
+      <% if @query.present? %>
+        <h1 class="page-title">Search: "<%= @query %>"</h1>
+      <% elsif @category.present? %>
+        <h1 class="page-title"><%= @category %></h1>
+      <% else %>
+        <h1 class="page-title">All Articles</h1>
+      <% end %>
+      <p class="page-subtitle"><%= @total_count %> articles</p>
+    </div>
+
+    <nav class="categories">
+      <a href="/" class="category-pill">← All</a>
+      <% %w[Tech News Gaming Business Design Culture Science AI/ML Programming Photography].each do |cat| %>
+        <a href="/?category=<%= cat %>" class="category-pill <%= 'active' if @category == cat %>"><%= cat %></a>
+      <% end %>
+    </nav>
+
+    <div id="entries-container">
+      <% if @entries.any? %>
+        <%= render "entries_grouped" %>
+      <% else %>
+        <div class="empty-state">
+          <h2>No articles found</h2>
+          <p>Try a different search or browse by category</p>
+        </div>
+      <% end %>
+    </div>
+
+    <% if @entries.any? && @entries.total_pages > 1 %>
+      <div id="infinite-sentinel" class="infinite-sentinel" data-page="<%= @page %>" data-total-pages="<%= @entries.total_pages %>" data-query="<%= @query %>" data-category="<%= @category %>" data-feed-id="<%= @feed_id %>">
+        Scroll for more
+      </div>
+    <% end %>
+  </main>
+  <script>
+    (function() {
+      var sentinel = document.getElementById('infinite-sentinel');
+      if (!sentinel) return;
+      var container = document.getElementById('entries-container');
+      var currentPage = parseInt(sentinel.dataset.page, 10);
+      var totalPages = parseInt(sentinel.dataset.totalPages, 10);
+      function buildUrl(page) {
+        var params = new URLSearchParams();
+        params.set('page', page);
+        params.set('partial', '1');
+        if (sentinel.dataset.query) params.set('q', sentinel.dataset.query);
+        if (sentinel.dataset.category) params.set('category', sentinel.dataset.category);
+        if (sentinel.dataset.feedId) params.set('feed_id', sentinel.dataset.feedId);
+        return '/?' + params.toString();
+      }
+      var observer = new IntersectionObserver(function(entries) {
+        if (!entries[0].isIntersecting) return;
+        if (currentPage >= totalPages) { sentinel.classList.add('done'); sentinel.textContent = ''; return; }
+        sentinel.classList.add('loading');
+        sentinel.textContent = 'Loading...';
+        var nextPage = currentPage + 1;
+        fetch(buildUrl(nextPage), { headers: { 'Accept': 'text/html' } })
+          .then(function(r) { return r.text(); })
+          .then(function(html) {
+            var wrap = document.createElement('div');
+            wrap.innerHTML = html;
+            while (wrap.firstChild) container.appendChild(wrap.firstChild);
+            currentPage = nextPage;
+            sentinel.dataset.page = currentPage;
+            sentinel.classList.remove('loading');
+            sentinel.textContent = currentPage >= totalPages ? '' : 'Scroll for more';
+            if (currentPage >= totalPages) sentinel.classList.add('done');
+          })
+          .catch(function() {
+            sentinel.classList.remove('loading');
+            sentinel.textContent = 'Load more';
+          });
+      }, { rootMargin: '200px' });
+      observer.observe(sentinel);
+    })();
+  </script>
+  </div>
+</body>
+</html>

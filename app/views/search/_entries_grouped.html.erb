@@ -1,0 +1,31 @@
+<% @entries_by_day.each do |date, entries| %>
+  <% day_label = date == Date.current ? "Today" : (date == Date.current - 1 ? "Yesterday" : date.strftime("%A, %b %-d")) %>
+  <section class="day-section" data-date="<%= date.iso8601 %>">
+    <h2 class="day-heading"><%= day_label %></h2>
+    <div class="grid">
+      <% entries.each do |entry| %>
+        <% plain_summary = ActionController::Base.helpers.strip_tags(entry.summary || entry.content || '').gsub(/\s+/, ' ').strip[0..120] %>
+        <a href="<%= entry.url %>" class="card" target="_blank" rel="noopener">
+          <% if entry.image_url.present? %>
+            <div class="card-image">
+              <img src="<%= entry.image_url %>" alt="" loading="lazy" onerror="this.closest('.card').style.display='none'">
+              <span class="badge"><%= entry.feed&.title&.split(/[.\s]/)&.first %></span>
+            </div>
+          <% end %>
+          <div class="card-body">
+            <% if entry.category.present? %>
+              <div class="card-category"><%= entry.category %></div>
+            <% end %>
+            <h3 class="card-title"><%= entry.title %></h3>
+            <% if plain_summary.present? %>
+              <p class="card-excerpt"><%= plain_summary %>...</p>
+            <% end %>
+            <div class="card-meta">
+              <%= time_ago_in_words(entry.published || entry.created_at) %> ago
+            </div>
+          </div>
+        </a>
+      <% end %>
+    </div>
+  </section>
+<% end %>

@@ -10,7 +10,10 @@ module SessionsHelper
 
   def current_user
     @current_user ||= begin
-      if request.subdomain == "api"
+      # Auto-login for development
+      if Rails.env.development?
+        User.first
+      elsif request.subdomain == "api"
         authenticate_with_http_basic do |username, password|
           User.where("lower(email) = ?", username.try(:downcase)).take.try(:authenticate, password)
         end

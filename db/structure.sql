@@ -425,6 +425,39 @@ ALTER SEQUENCE public.devices_id_seq OWNED BY public.devices.id;
 
 
 --
+-- Name: digest_entries; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.digest_entries (
+    id bigint NOT NULL,
+    user_id bigint NOT NULL,
+    entry_id bigint NOT NULL,
+    smart_rule_id bigint NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: digest_entries_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.digest_entries_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: digest_entries_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.digest_entries_id_seq OWNED BY public.digest_entries.id;
+
+
+--
 -- Name: discovered_feeds; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -530,7 +563,13 @@ CREATE TABLE public.entries (
     provider_id text,
     provider_parent_id text,
     chapters jsonb,
-    categories jsonb
+    categories jsonb,
+    category character varying(50),
+    ai_summary text,
+    ai_insights jsonb,
+    reading_time_minutes integer,
+    complexity character varying(20),
+    entities jsonb
 );
 
 
@@ -1163,6 +1202,108 @@ ALTER SEQUENCE public.sharing_services_id_seq OWNED BY public.sharing_services.i
 
 
 --
+-- Name: smart_rules; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.smart_rules (
+    id bigint NOT NULL,
+    user_id bigint NOT NULL,
+    name character varying NOT NULL,
+    instruction text NOT NULL,
+    action integer DEFAULT 0 NOT NULL,
+    enabled boolean DEFAULT true NOT NULL,
+    feed_ids bigint[] DEFAULT '{}'::bigint[],
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: smart_rules_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.smart_rules_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: smart_rules_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.smart_rules_id_seq OWNED BY public.smart_rules.id;
+
+
+--
+-- Name: source_pack_feeds; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.source_pack_feeds (
+    id bigint NOT NULL,
+    source_pack_id bigint NOT NULL,
+    feed_url character varying NOT NULL,
+    feed_name character varying NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: source_pack_feeds_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.source_pack_feeds_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: source_pack_feeds_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.source_pack_feeds_id_seq OWNED BY public.source_pack_feeds.id;
+
+
+--
+-- Name: source_packs; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.source_packs (
+    id bigint NOT NULL,
+    name character varying NOT NULL,
+    description text,
+    slug character varying NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: source_packs_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.source_packs_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: source_packs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.source_packs_id_seq OWNED BY public.source_packs.id;
+
+
+--
 -- Name: starred_entries; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1626,6 +1767,13 @@ ALTER TABLE ONLY public.devices ALTER COLUMN id SET DEFAULT nextval('public.devi
 
 
 --
+-- Name: digest_entries id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.digest_entries ALTER COLUMN id SET DEFAULT nextval('public.digest_entries_id_seq'::regclass);
+
+
+--
 -- Name: discovered_feeds id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1763,6 +1911,27 @@ ALTER TABLE ONLY public.saved_searches ALTER COLUMN id SET DEFAULT nextval('publ
 --
 
 ALTER TABLE ONLY public.sharing_services ALTER COLUMN id SET DEFAULT nextval('public.sharing_services_id_seq'::regclass);
+
+
+--
+-- Name: smart_rules id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.smart_rules ALTER COLUMN id SET DEFAULT nextval('public.smart_rules_id_seq'::regclass);
+
+
+--
+-- Name: source_pack_feeds id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.source_pack_feeds ALTER COLUMN id SET DEFAULT nextval('public.source_pack_feeds_id_seq'::regclass);
+
+
+--
+-- Name: source_packs id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.source_packs ALTER COLUMN id SET DEFAULT nextval('public.source_packs_id_seq'::regclass);
 
 
 --
@@ -1931,6 +2100,14 @@ ALTER TABLE ONLY public.devices
 
 
 --
+-- Name: digest_entries digest_entries_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.digest_entries
+    ADD CONSTRAINT digest_entries_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: discovered_feeds discovered_feeds_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2091,6 +2268,30 @@ ALTER TABLE ONLY public.sharing_services
 
 
 --
+-- Name: smart_rules smart_rules_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.smart_rules
+    ADD CONSTRAINT smart_rules_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: source_pack_feeds source_pack_feeds_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.source_pack_feeds
+    ADD CONSTRAINT source_pack_feeds_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: source_packs source_packs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.source_packs
+    ADD CONSTRAINT source_packs_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: starred_entries starred_entries_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2176,6 +2377,13 @@ ALTER TABLE ONLY public.updated_entries
 
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: idx_entries_category; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_entries_category ON public.entries USING btree (category);
 
 
 --
@@ -2298,6 +2506,34 @@ CREATE INDEX index_devices_on_user_id ON public.devices USING btree (user_id);
 
 
 --
+-- Name: index_digest_entries_on_entry_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_digest_entries_on_entry_id ON public.digest_entries USING btree (entry_id);
+
+
+--
+-- Name: index_digest_entries_on_smart_rule_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_digest_entries_on_smart_rule_id ON public.digest_entries USING btree (smart_rule_id);
+
+
+--
+-- Name: index_digest_entries_on_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_digest_entries_on_user_id ON public.digest_entries USING btree (user_id);
+
+
+--
+-- Name: index_digest_entries_on_user_id_and_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_digest_entries_on_user_id_and_created_at ON public.digest_entries USING btree (user_id, created_at);
+
+
+--
 -- Name: index_discovered_feeds_on_site_url_and_feed_url; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -2316,6 +2552,13 @@ CREATE INDEX index_embeds_on_parent_id ON public.embeds USING btree (parent_id);
 --
 
 CREATE UNIQUE INDEX index_embeds_on_source_and_provider_id ON public.embeds USING btree (source, provider_id);
+
+
+--
+-- Name: index_entries_on_feed_id_and_url_hash; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_entries_on_feed_id_and_url_hash ON public.entries USING btree (feed_id, md5(url)) WHERE ((url IS NOT NULL) AND (url <> ''::text));
 
 
 --
@@ -2638,6 +2881,34 @@ CREATE INDEX index_saved_searches_on_user_id ON public.saved_searches USING btre
 --
 
 CREATE INDEX index_sharing_services_on_user_id ON public.sharing_services USING btree (user_id);
+
+
+--
+-- Name: index_smart_rules_on_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_smart_rules_on_user_id ON public.smart_rules USING btree (user_id);
+
+
+--
+-- Name: index_smart_rules_on_user_id_and_enabled; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_smart_rules_on_user_id_and_enabled ON public.smart_rules USING btree (user_id, enabled);
+
+
+--
+-- Name: index_source_pack_feeds_on_source_pack_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_source_pack_feeds_on_source_pack_id ON public.source_pack_feeds USING btree (source_pack_id);
+
+
+--
+-- Name: index_source_packs_on_slug; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_source_packs_on_slug ON public.source_packs USING btree (slug);
 
 
 --
@@ -2970,6 +3241,14 @@ CREATE UNIQUE INDEX unique_schema_migrations ON public.schema_migrations USING b
 
 
 --
+-- Name: digest_entries fk_rails_08628a36bf; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.digest_entries
+    ADD CONSTRAINT fk_rails_08628a36bf FOREIGN KEY (entry_id) REFERENCES public.entries(id) ON DELETE CASCADE;
+
+
+--
 -- Name: podcast_subscriptions fk_rails_146c1d2d35; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2986,11 +3265,27 @@ ALTER TABLE ONLY public.newsletter_senders
 
 
 --
+-- Name: smart_rules fk_rails_20b5fe36f4; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.smart_rules
+    ADD CONSTRAINT fk_rails_20b5fe36f4 FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: podcast_subscriptions fk_rails_4bb4824ec6; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.podcast_subscriptions
     ADD CONSTRAINT fk_rails_4bb4824ec6 FOREIGN KEY (feed_id) REFERENCES public.feeds(id) ON DELETE CASCADE;
+
+
+--
+-- Name: digest_entries fk_rails_4e6f0f0b56; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.digest_entries
+    ADD CONSTRAINT fk_rails_4e6f0f0b56 FOREIGN KEY (smart_rule_id) REFERENCES public.smart_rules(id) ON DELETE CASCADE;
 
 
 --
@@ -3026,11 +3321,27 @@ ALTER TABLE ONLY public.authentication_tokens
 
 
 --
+-- Name: digest_entries fk_rails_bb57c74567; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.digest_entries
+    ADD CONSTRAINT fk_rails_bb57c74567 FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: playlists fk_rails_d67ef1eb45; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.playlists
     ADD CONSTRAINT fk_rails_d67ef1eb45 FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: source_pack_feeds fk_rails_f652bd4753; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.source_pack_feeds
+    ADD CONSTRAINT fk_rails_f652bd4753 FOREIGN KEY (source_pack_id) REFERENCES public.source_packs(id) ON DELETE CASCADE;
 
 
 --
@@ -3040,7 +3351,12 @@ ALTER TABLE ONLY public.playlists
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260204154516'),
+('20260204154515'),
+('20260204154514'),
+('20260204154513'),
 ('20251027170411'),
+('20250205180000'),
 ('20250117094633'),
 ('20240502090914'),
 ('20240226114227'),

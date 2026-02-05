@@ -2,7 +2,20 @@ require "sidekiq/web"
 Sidekiq::Web.app_url = ENV["FEEDBIN_URL"]
 
 Rails.application.routes.draw do
-  root to: "site#index"
+  root to: "search#index"
+
+  get "search", to: "search#index"
+  get "search/ai", to: "search#ai_search"
+  get "search/smart_feed", to: "search#smart_feed"
+
+  post "feed_requests", to: "feed_requests#create"
+  
+  # AI features
+  post "ai/chat", to: "ai#chat"
+  get "ai/trends", to: "ai#trends"
+  get "ai/digest", to: "ai#digest"
+  get "ai/analyze/:id", to: "ai#analyze"
+  get "ai/related/:id", to: "ai#related"
 
   mount StripeEvent::Engine, at: "/stripe"
 

@@ -101,3 +101,5 @@ group :development, :test do
   # gem "phlex-testing-nokogiri"
 end
 
+gem "ruby-openai"
+gem "anthropic"
