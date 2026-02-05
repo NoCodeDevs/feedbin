@@ -7,13 +7,13 @@
 #
 # Requires both dev (default) and prod DB to be reachable from your machine.
 
-prod_url = ENV["PRODUCTION_DATABASE_URL"]
-abort "Set PRODUCTION_DATABASE_URL (from: heroku config:get DATABASE_URL -a YOUR_APP)" if prod_url.blank?
+PROD_DB_URL = ENV["PRODUCTION_DATABASE_URL"]
+abort "Set PRODUCTION_DATABASE_URL (from: heroku config:get DATABASE_URL -a YOUR_APP)" if PROD_DB_URL.blank?
 
 # Separate connection for production
 class ProdDB < ActiveRecord::Base
   self.abstract_class = true
-  establish_connection(prod_url)
+  establish_connection(PROD_DB_URL)
 end
 
 class ProdFeed < ProdDB
@@ -58,10 +58,12 @@ Entry.where(feed_id: feed_map.keys).find_each do |dev_entry|
   prod_feed = feed_map[dev_entry.feed_id]
   next unless prod_feed
 
-  next if dev_entry.public_id.blank?
-  next if ProdEntry.exists?(feed_id: prod_feed.id, public_id: dev_entry.public_id)
+  # Need some identifier; public_id required by schema
+  pid = dev_entry.public_id.presence || dev_entry.url.presence || dev_entry.entry_id.presence || "e#{dev_entry.id}"
+  next if ProdEntry.exists?(feed_id: prod_feed.id, public_id: pid)
 
   row = ENTRY_COLS.to_h { |c| [c, dev_entry[c]] }
+  row["public_id"] = pid
   row["feed_id"] = prod_feed.id
   row["created_at"] = dev_entry.created_at
   row["updated_at"] = dev_entry.updated_at
