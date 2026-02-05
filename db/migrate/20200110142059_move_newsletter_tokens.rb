@@ -1,8 +1,6 @@
 class MoveNewsletterTokens < ActiveRecord::Migration[6.0]
-  include SidekiqHelper
-
   def up
-    enqueue_all(User, MoveTokens, "newsletter_token", "newsletters")
+    # MoveTokens job removed/renamed; skip for fresh DB (no users to migrate)
   end
 
   def down
