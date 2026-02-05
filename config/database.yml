@@ -15,3 +15,7 @@ test:
   username: <%= ENV['POSTGRES_USERNAME'] %>
   password: <%= ENV['POSTGRES_PASSWORD'] %>
   host: localhost
+
+production:
+  url: <%= ENV['DATABASE_URL'] %>
+  pool: <%= ENV['DB_POOL'] || 5 %>
