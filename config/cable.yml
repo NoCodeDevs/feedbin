@@ -8,4 +8,3 @@ production:
   adapter: redis
   url: <%= ENV.fetch("REDIS_URL") { "redis://localhost:6379/1" } %>
   channel_prefix: feedbin_production
-  ssl_params: <%= (ENV["REDIS_URL"] || "").start_with?("rediss://") ? { verify_mode: OpenSSL::SSL::VERIFY_NONE } : {} %>
