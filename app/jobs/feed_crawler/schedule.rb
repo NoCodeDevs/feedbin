@@ -9,7 +9,7 @@ module FeedCrawler
 
     def perform
       queues = [Downloader, Parser, Receiver]
-      unless queues.all? { queue_empty?(it.get_sidekiq_options["queue"]) }
+      unless queues.all? { |queue| queue_empty?(queue.get_sidekiq_options["queue"]) }
         Sidekiq.logger.info "skipping, crawl still processing"
         return
       end
@@ -46,7 +46,7 @@ module FeedCrawler
     end
 
     def last_refresh
-      last_refresh = Time.at(Sidekiq.redis { it.get(LAST_REFRESH_KEY) }.to_i)
+      last_refresh = Time.at(Sidekiq.redis { _1.get(LAST_REFRESH_KEY) }.to_i)
     end
 
     def increment
