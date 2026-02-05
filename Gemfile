@@ -103,3 +103,4 @@ end
 
 gem "ruby-openai"
 gem "anthropic"
+gem "cloudinary"

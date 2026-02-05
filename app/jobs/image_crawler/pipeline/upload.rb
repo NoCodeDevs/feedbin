@@ -14,10 +14,28 @@ module ImageCrawler
         DownloadCache.save(@image)
         Sidekiq.logger.info "Upload: id=#{@image.id} original_url=#{@image.original_url} storage_url=#{@image.storage_url} width=#{@image.width} height=#{@image.height}"
       ensure
-        File.unlink(@image.processed_path)
+        File.unlink(@image.processed_path) if @image&.processed_path && File.exist?(@image.processed_path)
       end
 
       def upload
+        if ENV["CLOUDINARY_URL"].present?
+          upload_to_cloudinary
+        else
+          upload_to_s3
+        end
+      end
+
+      def upload_to_cloudinary
+        require "cloudinary"
+        result = Cloudinary::Uploader.upload(
+          @image.processed_path,
+          public_id: @image.id,
+          folder: "feedbin"
+        )
+        result["secure_url"]
+      end
+
+      def upload_to_s3
         File.open(@image.processed_path) do |file|
           options = STORAGE.dup
           options = options.merge(region: @image.preset.region) unless @image.preset.region.nil?
