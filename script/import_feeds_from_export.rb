@@ -1,9 +1,13 @@
 #!/usr/bin/env ruby
 # Import feeds from data/feed_urls.txt (created by script/export_feeds.rb on dev).
-# Run on Heroku after deploying the repo that contains data/feed_urls.txt.
 #
-# Usage (preferred - avoids shell quoting issues):
+# Usage:
 #   heroku run rails feeds:import_from_export -a YOUR_APP
+#
+# If feeds fail with "result is not a feed" (sites blocking Heroku IPs), run
+# locally against production so requests use your home IP:
+#   heroku config -a YOUR_APP  # copy DATABASE_URL and REDIS_URL
+#   DATABASE_URL="..." REDIS_URL="..." bundle exec rails runner script/import_feeds_from_export.rb
 #
 # Optional: FEED_URLS_FILE=/path/to/file (default: data/feed_urls.txt)
 #           ENTRY_LIMIT=50 (default: 50 entries per feed on first fetch)
@@ -71,7 +75,11 @@ puts "\nDone. Added: #{added}, already present: #{skipped}, errors: #{errors}"
 puts "Feeds: #{Feed.count}, Entries: #{Entry.count}"
 
 if added > 0
-  Sidekiq.redis { _1.del(FeedCrawler::Schedule::LAST_REFRESH_KEY) }
-  FeedCrawler::Schedule.perform_async
-  puts "Enqueued FeedCrawler::Schedule for ongoing refreshes."
+  begin
+    Sidekiq.redis { _1.del(FeedCrawler::Schedule::LAST_REFRESH_KEY) }
+    FeedCrawler::Schedule.perform_async
+    puts "Enqueued FeedCrawler::Schedule for ongoing refreshes."
+  rescue => e
+    puts "Could not enqueue Schedule (run on Heroku if needed): #{e.message}"
+  end
 end

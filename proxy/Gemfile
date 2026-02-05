@@ -1,0 +1,4 @@
+# Minimal proxy for Feedkit - routes blocked feeds through ScraperAPI (residential IPs)
+source "https://rubygems.org"
+gem "rack"
+gem "http"
