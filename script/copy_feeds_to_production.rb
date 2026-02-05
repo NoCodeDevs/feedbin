@@ -51,13 +51,17 @@ Feed.find_each do |dev_feed|
   print "."
 end
 
-puts "\nCreated #{created_feeds} feeds. Copying entries... (feed_map has #{feed_map.size} feeds, keys: #{feed_map.keys.inspect})"
+# Map feed_url -> prod feed (stable; feed IDs can differ between dev/prod)
+feed_url_to_prod = {}
+Feed.find_each { |f| feed_url_to_prod[f.feed_url] = feed_map[f.id] if feed_map[f.id] }
+
+puts "\nCreated #{created_feeds} feeds. Copying entries..."
 
 batch = []
 skipped_no_prod = 0
 skipped_exists = 0
-Entry.where(feed_id: feed_map.keys).find_each do |dev_entry|
-  prod_feed = feed_map[dev_entry.feed_id]
+Entry.includes(:feed).find_each do |dev_entry|
+  prod_feed = feed_url_to_prod[dev_entry.feed&.feed_url]
   unless prod_feed
     skipped_no_prod += 1
     next
