@@ -2,8 +2,8 @@
 # Import feeds from data/feed_urls.txt (created by script/export_feeds.rb on dev).
 # Run on Heroku after deploying the repo that contains data/feed_urls.txt.
 #
-# Usage:
-#   heroku run 'rails runner load "script/import_feeds_from_export.rb"' -a YOUR_APP
+# Usage (preferred - avoids shell quoting issues):
+#   heroku run rails feeds:import_from_export -a YOUR_APP
 #
 # Optional: FEED_URLS_FILE=/path/to/file (default: data/feed_urls.txt)
 #           ENTRY_LIMIT=50 (default: 50 entries per feed on first fetch)
