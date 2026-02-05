@@ -49,11 +49,9 @@ class SearchController < ApplicationController
     elsif @category.present?
       Entry.includes(:feed)
            .where(category: @category)
-           .where.not(image_url: [nil, ''])
            .order(published: :desc)
     else
       Entry.includes(:feed)
-           .where.not(image_url: [nil, ''])
            .order(published: :desc)
     end
     scope = scope.where(feed_id: @feed_id) if @feed_id.present?
