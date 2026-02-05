@@ -3,10 +3,13 @@ class AddFeedIdToEntryStates < ActiveRecord::Migration[4.2]
     add_column :entry_states, :feed_id, :integer
     add_index :entry_states, :feed_id
 
-    EntryState.find_each do |entry_state|
-      entry_state.feed_id = entry_state.entry.feed_id
-      entry_state.save!
-    end
+    # Backfill feed_id from entries (avoid referencing removed EntryState model)
+    execute <<-SQL
+      UPDATE entry_states
+      SET feed_id = entries.feed_id
+      FROM entries
+      WHERE entry_states.entry_id = entries.id
+    SQL
   end
 
   def down
