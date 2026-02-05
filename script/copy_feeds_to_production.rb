@@ -51,16 +51,23 @@ Feed.find_each do |dev_feed|
   print "."
 end
 
-puts "\nCreated #{created_feeds} feeds. Copying entries..."
+puts "\nCreated #{created_feeds} feeds. Copying entries... (feed_map has #{feed_map.size} feeds, keys: #{feed_map.keys.inspect})"
 
 batch = []
+skipped_no_prod = 0
+skipped_exists = 0
 Entry.where(feed_id: feed_map.keys).find_each do |dev_entry|
   prod_feed = feed_map[dev_entry.feed_id]
-  next unless prod_feed
+  unless prod_feed
+    skipped_no_prod += 1
+    next
+  end
 
-  # Need some identifier; public_id required by schema
   pid = dev_entry.public_id.presence || dev_entry.url.presence || dev_entry.entry_id.presence || "e#{dev_entry.id}"
-  next if ProdEntry.exists?(feed_id: prod_feed.id, public_id: pid)
+  if ProdEntry.exists?(feed_id: prod_feed.id, public_id: pid)
+    skipped_exists += 1
+    next
+  end
 
   row = ENTRY_COLS.to_h { |c| [c, dev_entry[c]] }
   row["public_id"] = pid
@@ -74,11 +81,16 @@ Entry.where(feed_id: feed_map.keys).find_each do |dev_entry|
     batch.clear
     print "."
   end
+rescue => e
+  puts "\nError on entry #{dev_entry.id}: #{e.class} #{e.message}"
+  raise
 end
 if batch.any?
   ProdEntry.insert_all(batch)
   created_entries += batch.size
 end
+
+puts "\n(skipped: #{skipped_no_prod} no prod feed, #{skipped_exists} already exist)" if skipped_no_prod + skipped_exists > 0
 
 puts "\nDone. Created #{created_feeds} feeds, #{created_entries} entries in production."
 puts "Prod now has #{ProdFeed.count} feeds, #{ProdEntry.count} entries."
