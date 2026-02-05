@@ -1,11 +1,15 @@
 class RemoveFileFromImports < ActiveRecord::Migration[4.2]
   def self.up
-    drop_attached_file :imports, :file
+    remove_column :imports, :file_file_name, :string
+    remove_column :imports, :file_content_type, :string
+    remove_column :imports, :file_file_size, :integer
+    remove_column :imports, :file_updated_at, :datetime
   end
 
   def self.down
-    change_table :imports do |t|
-      t.has_attached_file :file
-    end
+    add_column :imports, :file_file_name, :string
+    add_column :imports, :file_content_type, :string
+    add_column :imports, :file_file_size, :integer
+    add_column :imports, :file_updated_at, :datetime
   end
 end
