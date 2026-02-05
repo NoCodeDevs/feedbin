@@ -82,7 +82,10 @@ Rails.application.configure do
   config.log_level = ENV.fetch("RAILS_LOG_LEVEL", "info")
 
   # Use a different cache store in production.
-  config.cache_store = :redis_cache_store, { url: ENV["REDIS_URL_CACHE"] || ENV["REDIS_URL"], reconnect_attempts: 3 }
+  redis_cache_url = ENV["REDIS_URL_CACHE"] || ENV["REDIS_URL"]
+  redis_cache_options = {url: redis_cache_url, reconnect_attempts: 3}
+  redis_cache_options[:ssl_params] = {verify_mode: OpenSSL::SSL::VERIFY_NONE} if redis_cache_url&.start_with?("rediss://")
+  config.cache_store = :redis_cache_store, redis_cache_options
 
   # Use a real queuing backend for Active Job (and separate queues per environment).
   # config.active_job.queue_adapter     = :resque
