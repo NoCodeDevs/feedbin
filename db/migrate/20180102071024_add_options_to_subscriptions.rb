@@ -9,20 +9,7 @@ class AddOptionsToSubscriptions < ActiveRecord::Migration[5.1]
     add_column :subscriptions, :media_only, :boolean
     change_column_default(:subscriptions, :media_only, false)
     add_index :subscriptions, :media_only, algorithm: :concurrently
-
-    UpdateDefaultColumn.perform_async({
-      "klass" => Subscription.to_s,
-      "column" => "show_retweets",
-      "default" => true,
-      "schedule" => true
-    })
-
-    UpdateDefaultColumn.perform_async({
-      "klass" => Subscription.to_s,
-      "column" => "media_only",
-      "default" => false,
-      "schedule" => true
-    })
+    # Backfill jobs skipped in migrations (requires Redis; on fresh DB no rows to backfill)
   end
 
   def down
