@@ -11,7 +11,7 @@
     <% Array(sources).each do |source| %>
       <% src_params = ["feed_id=#{source.id}"] %>
       <% src_params << "prompt=#{ERB::Util.url_encode(prompt)}" if smart_feed && prompt.present? %>
-      <% src_params << "category=#{ERB::Util.url_encode(@category)}" if !smart_feed && @category.present? %>
+      <% # Don't include category - clicking a source should show ALL posts from that source %>
       <% src_params << "q=#{ERB::Util.url_encode(@query)}" if !smart_feed && @query.present? %>
       <% source_url = "#{base}?#{src_params.join('&')}" %>
       <a href="<%= source_url %>" class="source-item <%= 'active' if feed_id.to_s == source.id.to_s %>">
