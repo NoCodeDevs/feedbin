@@ -13,7 +13,7 @@ class DeepDivesController < ApplicationController
     cache_key = "deep_dive:#{@topic.parameterize}"
     @deep_dive = Rails.cache.fetch(cache_key, expires_in: 2.hours) do
       generate_deep_dive(@topic)
-    end
+    end.with_indifferent_access
 
     respond_to do |format|
       format.html { render layout: false }
@@ -21,7 +21,7 @@ class DeepDivesController < ApplicationController
     end
   rescue => e
     Rails.logger.error "Deep dive error: #{e.message}\n#{e.backtrace.first(5).join("\n")}"
-    @deep_dive = empty_deep_dive(@topic).merge(error: "Failed to generate deep dive: #{e.message}")
+    @deep_dive = empty_deep_dive(@topic).merge(error: "Failed to generate deep dive: #{e.message}").with_indifferent_access
     respond_to do |format|
       format.html { render layout: false }
       format.json { render json: @deep_dive, status: 500 }

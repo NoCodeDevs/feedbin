@@ -534,10 +534,10 @@
     </div>
   </header>
 
-  <% if @deep_dive[:error] %>
+  <% if @deep_dive[:error] || @deep_dive["error"] %>
     <div class="empty-state" style="padding-top: 120px;">
       <h2>Not Enough Coverage</h2>
-      <p><%= @deep_dive[:error] %></p>
+      <p><%= @deep_dive[:error] || @deep_dive["error"] %></p>
       <a href="/">Browse All Articles</a>
     </div>
   <% else %>
