@@ -2,735 +2,126 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=5">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Deep Dive: <%= @topic %> - The Feed</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #000000;
-      --surface: #0a0a0a;
-      --surface-2: #141414;
-      --surface-3: #1a1a1a;
-      --text: #ffffff;
-      --text-2: #e5e5e5;
-      --text-3: #a3a3a3;
-      --text-4: #737373;
-      --accent: #7c3aed;
-      --accent-2: #8b5cf6;
-      --border: #262626;
-      --success: #22c55e;
-      --warning: #f59e0b;
-      --danger: #ef4444;
+      --bg: #000; --surface: #0a0a0a; --surface-2: #141414;
+      --text: #fff; --text-2: #e5e5e5; --text-3: #a3a3a3; --text-4: #737373;
+      --accent: #7c3aed; --accent-2: #8b5cf6; --border: #262626;
     }
-
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html { overflow-x: hidden; }
-    body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.6;
-      max-width: 100vw;
-      overflow-x: hidden;
-    }
-
-    .header {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: rgba(0, 0, 0, 0.8);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .header-inner {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 16px 32px;
-      display: flex;
-      align-items: center;
-      gap: 24px;
-    }
-
-    .logo {
-      font-family: 'Newsreader', serif;
-      font-size: 24px;
-      font-weight: 600;
-      color: var(--text);
-      text-decoration: none;
-    }
-
-    .back-link {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: var(--text-3);
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 500;
-      margin-left: auto;
-    }
-
-    .back-link:hover { color: var(--text); }
-    .back-link svg { width: 16px; height: 16px; }
-
-    .hero {
-      background: linear-gradient(180deg, rgba(124, 58, 237, 0.1) 0%, transparent 100%);
-      border-bottom: 1px solid var(--border);
-      padding: 48px 32px;
-    }
-
-    .hero-inner {
-      max-width: 900px;
-      margin: 0 auto;
-    }
-
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 16px;
-      background: rgba(124, 58, 237, 0.2);
-      border: 1px solid rgba(124, 58, 237, 0.4);
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--accent-2);
-      margin-bottom: 20px;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .hero-badge svg { width: 14px; height: 14px; }
-
-    .hero-title {
-      font-family: 'Newsreader', serif;
-      font-size: 48px;
-      font-weight: 500;
-      letter-spacing: -0.02em;
-      line-height: 1.1;
-      margin-bottom: 16px;
-    }
-
-    .hero-meta {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 16px;
-      font-size: 14px;
-      color: var(--text-3);
-    }
-
-    .hero-stat {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .hero-stat svg { width: 16px; height: 16px; color: var(--text-4); }
-
-    .trend-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-
-    .trend-badge.rising { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
-    .trend-badge.falling { background: rgba(239, 68, 68, 0.15); color: #f87171; }
-    .trend-badge.stable { background: var(--surface-2); color: var(--text-3); }
-    .trend-badge.new { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
-
-    .sparkline-large {
-      height: 24px;
-      color: var(--accent-2);
-    }
-
-    .sparkline-large svg { width: 100px; height: 24px; }
-
-    .main {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 48px 32px;
-      display: grid;
-      grid-template-columns: 1fr 320px;
-      gap: 48px;
-    }
-
-    .content { min-width: 0; }
-    .sidebar { min-width: 0; }
-
-    .section {
-      margin-bottom: 48px;
-    }
-
-    .section-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-
-    .section-icon {
-      width: 32px;
-      height: 32px;
-      background: var(--accent);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .section-icon svg { width: 16px; height: 16px; color: white; }
-
-    .section-title {
-      font-size: 18px;
-      font-weight: 600;
-    }
-
-    .summary-text {
-      font-size: 18px;
-      line-height: 1.8;
-      color: var(--text-2);
-    }
-
-    .key-points-list {
-      list-style: none;
-    }
-
-    .key-point {
-      position: relative;
-      padding: 16px 16px 16px 48px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      margin-bottom: 12px;
-      font-size: 15px;
-      color: var(--text-2);
-      line-height: 1.5;
-    }
-
-    .key-point::before {
-      content: "";
-      position: absolute;
-      left: 16px;
-      top: 18px;
-      width: 20px;
-      height: 20px;
-      background: var(--accent);
-      border-radius: 6px;
-    }
-
-    .key-point::after {
-      content: "✓";
-      position: absolute;
-      left: 20px;
-      top: 17px;
-      font-size: 12px;
-      color: white;
-      font-weight: bold;
-    }
-
-    .player-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 12px;
-    }
-
-    .player-name {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-
-    .player-role {
-      font-size: 13px;
-      color: var(--accent-2);
-      margin-bottom: 8px;
-    }
-
-    .player-recent {
-      font-size: 14px;
-      color: var(--text-3);
-      line-height: 1.5;
-    }
-
-    /* Timeline */
-    .timeline {
-      position: relative;
-      padding-left: 24px;
-    }
-
-    .timeline::before {
-      content: "";
-      position: absolute;
-      left: 7px;
-      top: 0;
-      bottom: 0;
-      width: 2px;
-      background: var(--border);
-    }
-
-    .timeline-item {
-      position: relative;
-      padding-bottom: 24px;
-    }
-
-    .timeline-item:last-child { padding-bottom: 0; }
-
-    .timeline-dot {
-      position: absolute;
-      left: -24px;
-      top: 4px;
-      width: 16px;
-      height: 16px;
-      background: var(--surface);
-      border: 3px solid var(--accent);
-      border-radius: 50%;
-    }
-
-    .timeline-date {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--accent-2);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      margin-bottom: 8px;
-    }
-
-    .timeline-count {
-      font-size: 11px;
-      color: var(--text-4);
-      margin-left: 8px;
-    }
-
-    .timeline-headlines {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .timeline-headline {
-      display: block;
-      padding: 12px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      text-decoration: none;
-      transition: all 0.15s;
-    }
-
-    .timeline-headline:hover {
-      background: var(--surface-2);
-      border-color: var(--text-4);
-    }
-
-    .timeline-headline-title {
-      font-size: 14px;
-      color: var(--text);
-      line-height: 1.4;
-      margin-bottom: 4px;
-    }
-
-    .timeline-headline-source {
-      font-size: 11px;
-      color: var(--text-4);
-    }
-
-    /* Sidebar widgets */
-    .widget {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 20px;
-      margin-bottom: 20px;
-    }
-
-    .widget-title {
-      font-size: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-4);
-      margin-bottom: 16px;
-    }
-
-    .source-list { list-style: none; }
-
-    .source-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 0;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .source-item:last-child { border-bottom: none; }
-
-    .source-name {
-      font-size: 14px;
-      color: var(--text-2);
-    }
-
-    .source-count {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--accent-2);
-    }
-
-    .related-topics { display: flex; flex-wrap: wrap; gap: 8px; }
-
-    .related-topic {
-      display: inline-block;
-      padding: 8px 14px;
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      font-size: 13px;
-      color: var(--text-2);
-      text-decoration: none;
-      transition: all 0.15s;
-    }
-
-    .related-topic:hover {
-      background: var(--surface-3);
-      color: var(--text);
-      border-color: var(--text-4);
-    }
-
-    .key-article {
-      display: block;
-      padding: 16px;
-      background: var(--surface-2);
-      border-radius: 12px;
-      text-decoration: none;
-      margin-bottom: 12px;
-      transition: all 0.15s;
-    }
-
-    .key-article:hover { background: var(--surface-3); }
-
-    .key-article-title {
-      font-size: 15px;
-      font-weight: 500;
-      color: var(--text);
-      line-height: 1.4;
-      margin-bottom: 6px;
-    }
-
-    .key-article-source {
-      font-size: 12px;
-      color: var(--accent-2);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-
-    .sentiment-indicator {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 16px;
-      background: var(--surface-2);
-      border-radius: 12px;
-    }
-
-    .sentiment-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-    }
-
-    .sentiment-icon.positive { background: rgba(34, 197, 94, 0.2); }
-    .sentiment-icon.negative { background: rgba(239, 68, 68, 0.2); }
-    .sentiment-icon.mixed { background: rgba(245, 158, 11, 0.2); }
-    .sentiment-icon.neutral { background: var(--surface-3); }
-
-    .sentiment-text {
-      font-size: 14px;
-      color: var(--text-2);
-    }
-
-    .sentiment-label {
-      font-size: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      color: var(--text-4);
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 80px 20px;
-    }
-
-    .empty-state h2 {
-      font-size: 24px;
-      margin-bottom: 12px;
-    }
-
-    .empty-state p {
-      color: var(--text-3);
-      margin-bottom: 24px;
-    }
-
-    .empty-state a {
-      display: inline-block;
-      padding: 12px 24px;
-      background: var(--accent);
-      border-radius: 10px;
-      color: white;
-      text-decoration: none;
-      font-weight: 600;
-    }
-
-    .generated-at {
-      font-size: 12px;
-      color: var(--text-4);
-      margin-top: 24px;
-    }
-
-    @media (max-width: 900px) {
-      .main {
-        grid-template-columns: 1fr;
-        padding: 32px 16px;
-        gap: 32px;
-      }
-      .sidebar { order: -1; }
-      .hero { padding: 32px 16px; }
-      .hero-title { font-size: 32px; }
-      .hero-meta { gap: 12px; }
-    }
-
-    @media (max-width: 600px) {
-      .header-inner { padding: 12px 16px; }
-      .logo { font-size: 20px; }
-      .hero-title { font-size: 28px; }
-      .summary-text { font-size: 16px; }
-      .key-point { padding: 14px 14px 14px 44px; font-size: 14px; }
-      .key-point::before { width: 18px; height: 18px; left: 14px; }
-      .key-point::after { left: 18px; font-size: 11px; }
-    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+    .header { position: sticky; top: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); padding: 16px 32px; }
+    .header-inner { max-width: 900px; margin: 0 auto; display: flex; align-items: center; gap: 20px; }
+    .logo { font-family: 'Newsreader', serif; font-size: 24px; font-weight: 600; color: var(--text); text-decoration: none; }
+    .back { color: var(--text-3); text-decoration: none; margin-left: auto; font-size: 14px; }
+    .back:hover { color: var(--text); }
+    .main { max-width: 900px; margin: 0 auto; padding: 48px 32px; }
+    .badge { display: inline-block; padding: 6px 14px; background: rgba(124,58,237,0.2); border: 1px solid rgba(124,58,237,0.4); border-radius: 999px; font-size: 12px; font-weight: 600; color: var(--accent-2); margin-bottom: 20px; }
+    h1 { font-family: 'Newsreader', serif; font-size: 42px; font-weight: 500; margin-bottom: 12px; }
+    .meta { color: var(--text-4); font-size: 14px; margin-bottom: 32px; }
+    .section { margin-bottom: 40px; }
+    .section-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-4); margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+    .summary { font-size: 18px; line-height: 1.8; color: var(--text-2); }
+    .points { list-style: none; }
+    .points li { padding: 12px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; font-size: 15px; color: var(--text-2); }
+    .player { padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 12px; }
+    .player-name { font-weight: 600; margin-bottom: 4px; }
+    .player-role { font-size: 13px; color: var(--accent-2); margin-bottom: 6px; }
+    .player-recent { font-size: 14px; color: var(--text-3); }
+    .article { display: block; padding: 14px; background: var(--surface-2); border-radius: 10px; margin-bottom: 10px; text-decoration: none; }
+    .article:hover { background: var(--surface); }
+    .article-title { font-size: 15px; color: var(--text); margin-bottom: 4px; }
+    .article-source { font-size: 12px; color: var(--accent-2); }
+    .topics { display: flex; flex-wrap: wrap; gap: 8px; }
+    .topic { padding: 8px 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 999px; font-size: 13px; color: var(--text-2); text-decoration: none; }
+    .topic:hover { background: var(--surface); color: var(--text); }
+    .empty { text-align: center; padding: 80px 20px; }
+    .empty h2 { font-size: 24px; margin-bottom: 12px; }
+    .empty p { color: var(--text-3); margin-bottom: 20px; }
+    .empty a { display: inline-block; padding: 12px 24px; background: var(--accent); border-radius: 10px; color: #fff; text-decoration: none; }
   </style>
 </head>
 <body>
   <header class="header">
     <div class="header-inner">
       <a href="/" class="logo">The Feed</a>
-      <a href="/" class="back-link">
-        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-        Back to Browse
-      </a>
+      <a href="/" class="back">← Back to Browse</a>
     </div>
   </header>
 
-  <% if @deep_dive[:error] || @deep_dive["error"] %>
-    <div class="empty-state" style="padding-top: 120px;">
-      <h2>Not Enough Coverage</h2>
-      <p><%= @deep_dive[:error] || @deep_dive["error"] %></p>
-      <a href="/">Browse All Articles</a>
-    </div>
-  <% else %>
-    <section class="hero">
-      <div class="hero-inner">
-        <div class="hero-badge">
-          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-          Deep Dive
+  <main class="main">
+    <% if @deep_dive["error"] || @deep_dive[:error] %>
+      <div class="empty">
+        <h2>Not Enough Coverage</h2>
+        <p><%= @deep_dive["error"] || @deep_dive[:error] %></p>
+        <a href="/">Browse All Articles</a>
+      </div>
+    <% else %>
+      <div class="badge">Deep Dive</div>
+      <h1><%= @topic %></h1>
+      <p class="meta"><%= @deep_dive["article_count"] || @deep_dive[:article_count] %> articles analyzed</p>
+
+      <% if (@deep_dive["summary"] || @deep_dive[:summary]).present? %>
+        <div class="section">
+          <div class="section-title">Overview</div>
+          <p class="summary"><%= @deep_dive["summary"] || @deep_dive[:summary] %></p>
         </div>
-        <h1 class="hero-title"><%= @topic %></h1>
-        <div class="hero-meta">
-          <span class="hero-stat">
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
-            <%= @deep_dive[:article_count] %> articles
-          </span>
-          <span class="hero-stat">
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            Last 14 days
-          </span>
-          <span class="trend-badge <%= @deep_dive[:trend] %>">
-            <% case @deep_dive[:trend] %>
-            <% when "rising" %>Rising
-            <% when "falling" %>Falling
-            <% when "new" %>New Topic
-            <% else %>Stable
+      <% end %>
+
+      <% points = @deep_dive["key_points"] || @deep_dive[:key_points] || [] %>
+      <% if points.any? %>
+        <div class="section">
+          <div class="section-title">Key Points</div>
+          <ul class="points">
+            <% points.each do |point| %>
+              <li><%= point %></li>
             <% end %>
-          </span>
-          <% if @deep_dive[:sparkline]&.any? %>
-            <span class="sparkline-large">
-              <%
-                data = @deep_dive[:sparkline]
-                width = 100
-                height = 24
-                max_val = [data.max, 1].max
-                points = data.each_with_index.map do |val, i|
-                  x = (i.to_f / [data.size - 1, 1].max) * width
-                  y = height - ((val.to_f / max_val) * (height - 4)) - 2
-                  "#{x.round(1)},#{y.round(1)}"
-                end.join(" ")
-              %>
-              <svg viewBox="0 0 <%= width %> <%= height %>">
-                <polyline fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="<%= points %>"/>
-              </svg>
-            </span>
+          </ul>
+        </div>
+      <% end %>
+
+      <% players = @deep_dive["key_players"] || @deep_dive[:key_players] || [] %>
+      <% if players.any? %>
+        <div class="section">
+          <div class="section-title">Key Players</div>
+          <% players.each do |player| %>
+            <div class="player">
+              <div class="player-name"><%= player["name"] || player[:name] %></div>
+              <div class="player-role"><%= player["role"] || player[:role] %></div>
+              <div class="player-recent"><%= player["recent"] || player[:recent] %></div>
+            </div>
           <% end %>
         </div>
-      </div>
-    </section>
+      <% end %>
 
-    <main class="main">
-      <div class="content">
-        <!-- Summary -->
-        <section class="section">
-          <div class="section-header">
-            <div class="section-icon">
-              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            </div>
-            <h2 class="section-title">Overview</h2>
-          </div>
-          <p class="summary-text"><%= @deep_dive[:summary] %></p>
-        </section>
+      <% articles = @deep_dive["key_articles"] || @deep_dive[:key_articles] || [] %>
+      <% if articles.any? %>
+        <div class="section">
+          <div class="section-title">Must-Read Articles</div>
+          <% articles.each do |article| %>
+            <a href="<%= article["url"] || article[:url] %>" target="_blank" class="article">
+              <div class="article-title"><%= article["title"] || article[:title] %></div>
+              <div class="article-source"><%= article["source"] || article[:source] %></div>
+            </a>
+          <% end %>
+        </div>
+      <% end %>
 
-        <!-- Key Points -->
-        <% if @deep_dive[:key_points]&.any? %>
-          <section class="section">
-            <div class="section-header">
-              <div class="section-icon">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-              </div>
-              <h2 class="section-title">Key Points</h2>
-            </div>
-            <ul class="key-points-list">
-              <% @deep_dive[:key_points].each do |point| %>
-                <li class="key-point"><%= point %></li>
-              <% end %>
-            </ul>
-          </section>
-        <% end %>
-
-        <!-- Key Players -->
-        <% if @deep_dive[:key_players]&.any? %>
-          <section class="section">
-            <div class="section-header">
-              <div class="section-icon">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-              </div>
-              <h2 class="section-title">Key Players</h2>
-            </div>
-            <% @deep_dive[:key_players].each do |player| %>
-              <div class="player-card">
-                <div class="player-name"><%= player["name"] %></div>
-                <div class="player-role"><%= player["role"] %></div>
-                <div class="player-recent"><%= player["recent"] %></div>
-              </div>
+      <% topics = @deep_dive["related_topics"] || @deep_dive[:related_topics] || [] %>
+      <% if topics.any? %>
+        <div class="section">
+          <div class="section-title">Related Topics</div>
+          <div class="topics">
+            <% topics.each do |topic| %>
+              <a href="/deep-dive/<%= CGI.escape(topic) %>" class="topic"><%= topic %></a>
             <% end %>
-          </section>
-        <% end %>
-
-        <!-- Timeline -->
-        <% if @deep_dive[:timeline]&.any? %>
-          <section class="section">
-            <div class="section-header">
-              <div class="section-icon">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-              </div>
-              <h2 class="section-title">Timeline</h2>
-            </div>
-            <div class="timeline">
-              <% @deep_dive[:timeline].first(7).each do |day| %>
-                <div class="timeline-item">
-                  <div class="timeline-dot"></div>
-                  <div class="timeline-date">
-                    <%= day[:date_label] %>
-                    <span class="timeline-count"><%= day[:article_count] %> articles</span>
-                  </div>
-                  <div class="timeline-headlines">
-                    <% day[:headlines]&.each do |headline| %>
-                      <a href="<%= headline[:url] %>" target="_blank" rel="noopener" class="timeline-headline">
-                        <div class="timeline-headline-title"><%= headline[:title] %></div>
-                        <div class="timeline-headline-source"><%= headline[:source] %></div>
-                      </a>
-                    <% end %>
-                  </div>
-                </div>
-              <% end %>
-            </div>
-          </section>
-        <% end %>
-
-        <p class="generated-at">Generated <%= time_ago_in_words(Time.parse(@deep_dive[:generated_at])) rescue "just now" %> ago</p>
-      </div>
-
-      <div class="sidebar">
-        <!-- Sentiment -->
-        <div class="widget">
-          <div class="widget-title">Coverage Sentiment</div>
-          <div class="sentiment-indicator">
-            <div class="sentiment-icon <%= @deep_dive[:sentiment] %>">
-              <% case @deep_dive[:sentiment] %>
-              <% when "positive" %>😊
-              <% when "negative" %>😟
-              <% when "mixed" %>🤔
-              <% else %>😐
-              <% end %>
-            </div>
-            <div>
-              <div class="sentiment-label">Overall tone</div>
-              <div class="sentiment-text"><%= (@deep_dive[:sentiment] || "neutral").titleize %></div>
-            </div>
           </div>
         </div>
-
-        <!-- Key Articles -->
-        <% if @deep_dive[:key_articles]&.any? %>
-          <div class="widget">
-            <div class="widget-title">Must-Read Articles</div>
-            <% @deep_dive[:key_articles].each do |article| %>
-              <a href="<%= article[:url] %>" target="_blank" rel="noopener" class="key-article">
-                <div class="key-article-title"><%= article[:title] %></div>
-                <div class="key-article-source"><%= article[:source] %></div>
-              </a>
-            <% end %>
-          </div>
-        <% end %>
-
-        <!-- Sources -->
-        <% if @deep_dive[:sources]&.any? %>
-          <div class="widget">
-            <div class="widget-title">Top Sources</div>
-            <ul class="source-list">
-              <% @deep_dive[:sources].first(6).each do |source| %>
-                <li class="source-item">
-                  <span class="source-name"><%= source[:name] %></span>
-                  <span class="source-count"><%= source[:count] %></span>
-                </li>
-              <% end %>
-            </ul>
-          </div>
-        <% end %>
-
-        <!-- Related Topics -->
-        <% if @deep_dive[:related_topics]&.any? %>
-          <div class="widget">
-            <div class="widget-title">Related Topics</div>
-            <div class="related-topics">
-              <% @deep_dive[:related_topics].each do |topic| %>
-                <a href="/deep-dive/<%= CGI.escape(topic) %>" class="related-topic"><%= topic %></a>
-              <% end %>
-            </div>
-          </div>
-        <% end %>
-      </div>
-    </main>
-  <% end %>
+      <% end %>
+    <% end %>
+  </main>
 </body>
 </html>
