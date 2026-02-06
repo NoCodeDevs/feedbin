@@ -1,10 +1,11 @@
 <aside class="trending-sidebar">
   <div class="trending-sidebar-title">Trending This Week</div>
+  <p style="font-size: 11px; color: var(--text-4); padding: 0 8px 12px; margin: 0;">Click any topic for a deep dive</p>
   <nav class="trending-nav">
     <% if @trending_topics.present? %>
       <% @trending_topics.each do |topic| %>
         <% search_query = topic[:keywords]&.first || topic[:name] %>
-        <a href="/deep-dive/<%= CGI.escape(topic[:name]) %>" class="trending-item <%= 'active' if @query == search_query %>" data-topic="<%= search_query %>">
+        <a href="/deep-dive/<%= CGI.escape(topic[:name]) %>" class="trending-item <%= 'active' if @query == search_query %>" data-topic="<%= search_query %>" title="Deep dive: <%= topic[:name] %>">
           <span class="trending-emoji"><%= topic[:emoji] %></span>
           <div class="trending-content">
             <div class="trending-name"><%= topic[:name] %></div>
@@ -39,8 +40,4 @@
       <div class="trending-empty">Analyzing trends...</div>
     <% end %>
   </nav>
-  <div class="trending-divider"></div>
-  <a href="/feed" class="trending-item" style="justify-content: center; background: rgba(124, 58, 237, 0.1); border: 1px dashed rgba(124, 58, 237, 0.3); margin: 0 8px;">
-    <span style="font-size: 13px; color: var(--accent-2); font-weight: 500;">+ Build Custom Feed</span>
-  </a>
 </aside>
