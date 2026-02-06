@@ -129,7 +129,6 @@ class DeepDivesController < ApplicationController
     sanitized = words.map { |w| "#{w}:*" }.join(' & ')
 
     Entry.includes(:feed)
-         .where("image->>'processed_url' IS NOT NULL AND image->>'processed_url' != ''")
          .where("published > ?", days.days.ago)
          .where(
            "to_tsvector('english', coalesce(title, '') || ' ' || coalesce(summary, '')) @@ to_tsquery('english', ?)",
@@ -144,7 +143,6 @@ class DeepDivesController < ApplicationController
     values = words.flat_map { |w| ["%#{w}%", "%#{w}%"] }
 
     Entry.includes(:feed)
-         .where("image->>'processed_url' IS NOT NULL AND image->>'processed_url' != ''")
          .where("published > ?", days.days.ago)
          .where(conditions.join(' AND '), *values)
          .order(published: :desc)
