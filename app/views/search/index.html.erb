@@ -919,29 +919,105 @@
 
     @media (max-width: 1000px) {
       .grid { grid-template-columns: repeat(2, 1fr); }
-      .sources-sidebar { width: 220px; }
+      .trending-sidebar { width: 220px; }
     }
 
     @media (max-width: 768px) {
       .search-layout { flex-direction: column; }
-      .sources-sidebar {
+      .trending-sidebar {
         width: 100%;
-        padding: 16px 24px;
+        padding: 16px;
         border-right: none;
         border-bottom: 1px solid var(--border);
         position: static;
         max-height: none;
         overflow-y: visible;
       }
-      .sources-nav { flex-direction: row; flex-wrap: wrap; gap: 8px; }
-      .source-item { flex: 1; min-width: 140px; }
+      .trending-nav {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: 8px;
+        padding-bottom: 8px;
+        -webkit-overflow-scrolling: touch;
+      }
+      .trending-item {
+        flex-shrink: 0;
+        padding: 8px 12px;
+        background: var(--surface-2);
+        border-radius: 20px;
+      }
+      .trending-meta { display: none; }
+      .trending-badge { display: none; }
+      .header-timing { display: none; }
+      .categories {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        padding-bottom: 8px;
+        -webkit-overflow-scrolling: touch;
+      }
+      .category-pill { flex-shrink: 0; }
+      .grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+      .topic-analysis-panel { margin-bottom: 24px; padding: 16px; }
+      .analysis-perspectives { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 600px) {
-      .header-inner { padding: 12px 16px; }
-      .main { padding: 24px 16px; }
-      .grid { grid-template-columns: 1fr; }
-      .page-title { font-size: 32px; }
+      .header-inner {
+        padding: 12px 16px;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      .logo { font-size: 20px; }
+      .header-nav { order: 3; width: 100%; justify-content: center; display: none; }
+      .search-form {
+        order: 2;
+        flex: 1;
+        min-width: 0;
+        max-width: none;
+      }
+      .search-input { padding: 10px 12px 10px 40px; font-size: 14px; }
+      .add-feed-btn { display: none; }
+      .main { padding: 16px; }
+      .grid { grid-template-columns: 1fr; gap: 16px; }
+      .page-header { flex-direction: column; gap: 4px; margin-bottom: 12px; }
+      .page-title { font-size: 22px; }
+      .page-subtitle { font-size: 13px; }
+      .card { border-radius: 12px; }
+      .card-image { aspect-ratio: 16/9; }
+      .card-body { padding: 14px; }
+      .card-title { font-size: 15px; }
+      .card-excerpt { font-size: 13px; -webkit-line-clamp: 2; }
+      .card-ai-btn { width: 28px; height: 28px; font-size: 10px; bottom: 8px; right: 8px; opacity: 1; }
+      .categories { margin-bottom: 16px; gap: 6px; }
+      .category-pill { padding: 6px 14px; font-size: 12px; }
+      .trending-sidebar { padding: 12px; }
+      .trending-sidebar-title { font-size: 9px; margin-bottom: 8px; }
+      .trending-item { padding: 6px 10px; gap: 6px; }
+      .trending-emoji { font-size: 14px; width: 20px; }
+      .trending-name { font-size: 12px; }
+      .topic-analysis-panel { padding: 14px; border-radius: 12px; }
+      .analysis-header { margin-bottom: 14px; }
+      .analysis-title { font-size: 12px; }
+      .analysis-summary { font-size: 14px; line-height: 1.6; margin-bottom: 16px; }
+      .takeaways-list li { font-size: 13px; margin-bottom: 8px; }
+      .key-article-link { padding: 8px 10px; }
+      .key-article-title { font-size: 12px; }
+      .article-summary-box { padding: 16px; border-radius: 12px; }
+      .article-summary-title { font-size: 14px; }
+      .article-summary-tldr { font-size: 14px; padding: 10px; }
+      .day-heading { font-size: 12px; margin-bottom: 12px; }
+    }
+
+    @media (max-width: 400px) {
+      .header-inner { padding: 10px 12px; gap: 8px; }
+      .logo { font-size: 18px; }
+      .search-input { padding: 8px 10px 8px 36px; font-size: 13px; background-size: 16px; background-position: 10px center; }
+      .main { padding: 12px; }
+      .page-title { font-size: 20px; }
+      .card-body { padding: 12px; }
+      .card-title { font-size: 14px; }
+      .card-meta { font-size: 11px; }
     }
   </style>
 </head>

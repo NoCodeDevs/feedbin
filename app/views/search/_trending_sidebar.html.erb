@@ -40,18 +40,4 @@
     <% end %>
   </nav>
 
-  <div class="trending-divider"></div>
-
-  <div class="trending-sidebar-title">Sources</div>
-  <nav class="sources-nav">
-    <a href="<%= @query.present? ? "/?q=#{CGI.escape(@query)}" : "/" %>" class="source-item <%= 'active' unless @feed_id %>">
-      <span class="source-name">All Sources</span>
-    </a>
-    <% @sources.first(10).each do |source| %>
-      <a href="<%= @query.present? ? "/?q=#{CGI.escape(@query)}&feed_id=#{source.id}" : "/?feed_id=#{source.id}" %>" class="source-item <%= 'active' if @feed_id.to_s == source.id.to_s %>">
-        <span class="source-name"><%= source.title %></span>
-        <span class="source-count"><%= source.entries_count %></span>
-      </a>
-    <% end %>
-  </nav>
 </aside>
