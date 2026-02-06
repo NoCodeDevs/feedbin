@@ -43,6 +43,7 @@ class SearchController < ApplicationController
     @categories = CATEGORIES
     @sources = sources_with_counts
     @trending_topics = Rails.cache.fetch("trending_topics", expires_in: 1.hour) { trending_topics_with_sparklines }
+    @crawl_timing = crawl_timing_info
     @page = [params[:page].to_i, 1].max
 
     scope = if @query.present?
@@ -133,6 +134,62 @@ class SearchController < ApplicationController
   rescue => e
     Rails.logger.error "Ask error: #{e.message}"
     render json: { error: "Failed to process question" }, status: 500
+  end
+
+  def analyze_topic
+    query = params[:q].to_s.strip
+    return render json: { error: "No query" }, status: 400 if query.blank?
+
+    unless ENV['ANTHROPIC_API_KEY'] || ENV['OPENAI_API_KEY']
+      return render json: { error: "AI features require an API key" }, status: 503
+    end
+
+    # Get articles matching the topic (last 7 days)
+    entries = search_entries_scope(query, nil)
+                .where("published > ?", 7.days.ago)
+                .limit(30)
+
+    if entries.size < 3
+      return render json: {
+        topic: query,
+        article_count: entries.size,
+        message: "Not enough articles for analysis",
+        clusters: [],
+        comparison: nil
+      }
+    end
+
+    # Prepare articles for AI
+    articles = entries.map do |e|
+      {
+        id: e.id,
+        title: e.title,
+        source: e.feed&.title,
+        summary: ActionController::Base.helpers.strip_tags(e.summary.to_s)[0..400],
+        url: e.url,
+        image: e.processed_image
+      }
+    end
+
+    # Run AI clustering and analysis
+    enhancer = AIEnhancer.new
+    clusters = enhancer.cluster_stories(articles)
+
+    # Get comparison for top cluster if exists
+    comparison = nil
+    if clusters.any? && clusters.first[:articles].size >= 2
+      comparison = enhancer.compare_coverage(clusters.first[:articles])
+    end
+
+    render json: {
+      topic: query,
+      article_count: entries.size,
+      clusters: clusters,
+      comparison: comparison
+    }
+  rescue => e
+    Rails.logger.error "Analyze topic error: #{e.message}"
+    render json: { error: "Analysis failed" }, status: 500
   end
 
   private
@@ -303,5 +360,28 @@ class SearchController < ApplicationController
     else
       "stable"
     end
+  end
+
+  def crawl_timing_info
+    # Get most recent entry creation time as proxy for last crawl
+    last_entry = Entry.where("created_at > ?", 2.hours.ago)
+                      .order(created_at: :desc)
+                      .limit(1)
+                      .pick(:created_at)
+
+    # Crawl schedule runs every 15 minutes
+    schedule_interval = 15.minutes
+
+    if last_entry
+      time_since_crawl = Time.current - last_entry
+      next_crawl_in = [schedule_interval - (time_since_crawl % schedule_interval), 0].max
+    else
+      next_crawl_in = schedule_interval
+    end
+
+    {
+      last_updated: last_entry,
+      next_update_in: next_crawl_in.to_i
+    }
   end
 end

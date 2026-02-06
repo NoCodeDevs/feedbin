@@ -407,6 +407,165 @@
     .trending-empty { padding: 12px 8px; color: var(--text-4); font-size: 12px; }
     .trending-divider { height: 1px; background: var(--border); margin: 16px 0; }
 
+    /* Crawl Timing */
+    .crawl-timing {
+      display: flex;
+      gap: 20px;
+      padding: 10px 12px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .timing-item { display: flex; flex-direction: column; gap: 1px; }
+    .timing-label {
+      font-size: 9px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-4);
+    }
+    .timing-value {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-3);
+    }
+
+    /* Topic Analysis Panel */
+    .topic-analysis-panel {
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%);
+      border: 1px solid rgba(124, 58, 237, 0.3);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 32px;
+    }
+    .analysis-loading {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--accent-2);
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .analysis-loading .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--accent-2);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    .analysis-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .analysis-icon {
+      width: 28px;
+      height: 28px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+      color: white;
+    }
+    .analysis-title {
+      flex: 1;
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--accent-2);
+    }
+    .analysis-close {
+      background: none;
+      border: none;
+      color: var(--text-4);
+      cursor: pointer;
+      font-size: 20px;
+      padding: 4px 8px;
+      line-height: 1;
+    }
+    .analysis-close:hover { color: var(--text); }
+    .analysis-summary {
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--text-2);
+      margin-bottom: 24px;
+    }
+    .analysis-perspectives {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .perspective-card {
+      padding: 14px;
+      background: var(--surface-2);
+      border-radius: 10px;
+    }
+    .perspective-source {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .perspective-angle {
+      font-size: 13px;
+      color: var(--text-3);
+      line-height: 1.5;
+    }
+    .perspective-tone {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .tone-neutral { background: var(--surface-3); color: var(--text-3); }
+    .tone-positive { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+    .tone-negative { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+    .tone-critical { background: rgba(249, 115, 22, 0.2); color: #f97316; }
+    .analysis-section {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(124, 58, 237, 0.2);
+    }
+    .analysis-section-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-4);
+      margin-bottom: 8px;
+    }
+    .analysis-section-text {
+      font-size: 14px;
+      color: var(--text-2);
+      line-height: 1.6;
+    }
+    .analysis-empty {
+      color: var(--text-3);
+      font-size: 14px;
+    }
+    .analysis-clusters {
+      margin-bottom: 20px;
+    }
+    .cluster-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      background: var(--surface-2);
+      border-radius: 999px;
+      font-size: 12px;
+      color: var(--text-3);
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+
     .add-feed-btn {
       padding: 10px 16px;
       border-radius: 10px;
@@ -737,6 +896,130 @@
       });
     })();
   </script>
+  <script>
+    // Topic Analysis Function
+    function analyzeTopic(event, encodedQuery) {
+      event.preventDefault();
+      var query = decodeURIComponent(encodedQuery);
+
+      var panel = document.getElementById('topic-analysis');
+      var loading = panel.querySelector('.analysis-loading');
+      var content = panel.querySelector('.analysis-content');
+
+      // Show panel with loading state
+      panel.style.display = 'block';
+      loading.style.display = 'flex';
+      content.innerHTML = '';
+
+      // Update URL
+      var newUrl = '/?q=' + encodedQuery;
+      window.history.pushState({}, '', newUrl);
+
+      // Mark the clicked topic as active
+      document.querySelectorAll('.trending-item').forEach(function(item) {
+        item.classList.remove('active');
+        if (item.dataset.topic === query) {
+          item.classList.add('active');
+        }
+      });
+
+      // Fetch analysis
+      fetch('/search/analyze_topic?q=' + encodedQuery)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          loading.style.display = 'none';
+          content.innerHTML = renderTopicAnalysis(data);
+        })
+        .catch(function(err) {
+          loading.style.display = 'none';
+          content.innerHTML = '<p class="analysis-empty">Analysis failed. Please try again.</p>';
+        });
+
+      // Also reload the page content with search results
+      loadSearchResults(query);
+    }
+
+    function loadSearchResults(query) {
+      var container = document.getElementById('entries-container');
+      var encodedQuery = encodeURIComponent(query);
+      fetch('/?q=' + encodedQuery + '&partial=1', { headers: { 'Accept': 'text/html' } })
+        .then(function(r) { return r.text(); })
+        .then(function(html) {
+          container.innerHTML = html;
+          // Update page header
+          var title = document.querySelector('.page-title');
+          if (title) title.textContent = 'Search: "' + query + '"';
+        });
+    }
+
+    function renderTopicAnalysis(data) {
+      if (data.error) {
+        return '<p class="analysis-empty">' + data.error + '</p>';
+      }
+
+      if (data.message) {
+        return '<div class="analysis-header"><div class="analysis-icon">AI</div><span class="analysis-title">Topic Analysis</span><button class="analysis-close" onclick="closeAnalysis()">&times;</button></div><p class="analysis-empty">' + data.message + ' (' + data.article_count + ' articles found)</p>';
+      }
+
+      var html = '<div class="analysis-header"><div class="analysis-icon">AI</div><span class="analysis-title">Topic Analysis: ' + escapeHtml(data.topic) + '</span><button class="analysis-close" onclick="closeAnalysis()">&times;</button></div>';
+
+      // Show clusters as badges
+      if (data.clusters && data.clusters.length > 0) {
+        html += '<div class="analysis-clusters">';
+        data.clusters.forEach(function(cluster) {
+          html += '<span class="cluster-badge">' + escapeHtml(cluster.headline || cluster.topic) + ' (' + (cluster.articles ? cluster.articles.length : 0) + ')</span>';
+        });
+        html += '</div>';
+      }
+
+      // Show comparison if available
+      if (data.comparison) {
+        if (data.comparison.summary) {
+          html += '<p class="analysis-summary">' + escapeHtml(data.comparison.summary) + '</p>';
+        }
+
+        // Perspectives
+        if (data.comparison.perspectives && data.comparison.perspectives.length > 0) {
+          html += '<div class="analysis-perspectives">';
+          data.comparison.perspectives.forEach(function(p) {
+            var toneClass = 'tone-' + (p.tone || 'neutral');
+            html += '<div class="perspective-card">';
+            html += '<div class="perspective-source">' + escapeHtml(p.source) + '</div>';
+            html += '<p class="perspective-angle">' + escapeHtml(p.angle) + '</p>';
+            html += '<span class="perspective-tone ' + toneClass + '">' + escapeHtml(p.tone || 'neutral') + '</span>';
+            html += '</div>';
+          });
+          html += '</div>';
+        }
+
+        // Key differences
+        if (data.comparison.key_differences) {
+          html += '<div class="analysis-section"><div class="analysis-section-title">Key Differences</div><p class="analysis-section-text">' + escapeHtml(data.comparison.key_differences) + '</p></div>';
+        }
+
+        // Consensus
+        if (data.comparison.consensus) {
+          html += '<div class="analysis-section"><div class="analysis-section-title">What Sources Agree On</div><p class="analysis-section-text">' + escapeHtml(data.comparison.consensus) + '</p></div>';
+        }
+      } else {
+        html += '<p class="analysis-empty">Found ' + data.article_count + ' articles about this topic.</p>';
+      }
+
+      return html;
+    }
+
+    function closeAnalysis() {
+      var panel = document.getElementById('topic-analysis');
+      panel.style.display = 'none';
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      var div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  </script>
 
   <div class="search-layout">
     <%= render "trending_sidebar" %>
@@ -770,6 +1053,14 @@
         <div class="ai-response-sources-title">Sources</div>
         <div id="ai-sources-list"></div>
       </div>
+    </div>
+
+    <div id="topic-analysis" class="topic-analysis-panel" style="display: none;">
+      <div class="analysis-loading">
+        <div class="spinner"></div>
+        <span>Analyzing coverage...</span>
+      </div>
+      <div class="analysis-content"></div>
     </div>
 
     <div id="entries-container">
