@@ -42,6 +42,7 @@ class SearchController < ApplicationController
     @feed_id = params[:feed_id].presence
     @categories = CATEGORIES
     @sources = sources_with_counts
+    @trending_topics = Rails.cache.fetch("trending_topics", expires_in: 1.hour) { trending_topics_with_sparklines }
     @page = [params[:page].to_i, 1].max
 
     scope = if @query.present?
@@ -239,5 +240,68 @@ class SearchController < ApplicationController
         .select("feeds.id, feeds.title, COUNT(entries.id) AS entries_count")
         .order("entries_count DESC")
         .limit(100)
+  end
+
+  def trending_topics_with_sparklines
+    return @trending_topics_cache if defined?(@trending_topics_cache)
+
+    # Get entries grouped by day for the past 7 days
+    days = 7
+    entries_by_day = {}
+    days.times do |i|
+      date = i.days.ago.to_date
+      entries_by_day[date.to_s] = Entry
+        .where("DATE(published) = ?", date)
+        .where(with_complete_image)
+        .pluck(:title)
+    end
+
+    # Use AI to extract topics
+    return [] unless ENV["ANTHROPIC_API_KEY"] || ENV["OPENAI_API_KEY"]
+
+    enhancer = AIEnhancer.new
+    topics = enhancer.extract_trending_topics(entries_by_day, limit: 8)
+
+    # Calculate sparkline data for each topic
+    topics.map do |topic|
+      keywords = topic["keywords"] || [topic["name"]]
+      pattern = keywords.map { |k| Regexp.escape(k) }.join("|")
+      regex = /#{pattern}/i
+
+      # Count matches per day
+      daily_counts = days.times.map do |i|
+        date = i.days.ago.to_date.to_s
+        titles = entries_by_day[date] || []
+        titles.count { |t| t =~ regex }
+      end.reverse # oldest first for sparkline
+
+      total = daily_counts.sum
+      next if total < 2 # Skip topics with very few matches
+
+      {
+        name: topic["name"],
+        emoji: topic["emoji"] || "",
+        keywords: keywords,
+        total: total,
+        sparkline: daily_counts,
+        trend: calculate_trend(daily_counts)
+      }
+    end.compact.sort_by { |t| -t[:total] }.first(8)
+  rescue => e
+    Rails.logger.error "Trending topics error: #{e.message}"
+    []
+  end
+
+  def calculate_trend(daily_counts)
+    return "stable" if daily_counts.size < 3
+    recent = daily_counts.last(3).sum
+    earlier = daily_counts.first(3).sum
+    if recent > earlier * 1.5
+      "rising"
+    elsif recent < earlier * 0.5
+      "falling"
+    else
+      "stable"
+    end
   end
 end

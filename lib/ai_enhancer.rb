@@ -95,11 +95,11 @@ class AIEnhancer
   # Get trending topics across recent articles
   def extract_trends(articles, limit: 8)
     texts = articles.map { |a| "- #{a[:title]}" }.join("\n")
-    
+
     prompt = <<~PROMPT
       These are recent article titles:
       #{texts}
-      
+
       Identify the #{limit} most prominent trending topics/themes.
       Return ONLY valid JSON: {"trends": [{"topic": "Topic Name", "count": number, "description": "brief description"}]}
     PROMPT
@@ -109,6 +109,44 @@ class AIEnhancer
     json_match ? JSON.parse(json_match[0])["trends"] : []
   rescue => e
     puts "Error extracting trends: #{e.message}"
+    []
+  end
+
+  # Extract trending topics with search keywords for filtering
+  def extract_trending_topics(titles_by_day, limit: 10)
+    # titles_by_day: { "2024-01-01" => ["title1", "title2"], ... }
+    all_titles = titles_by_day.values.flatten.first(200).map { |t| "- #{t}" }.join("\n")
+
+    prompt = <<~PROMPT
+      Analyze these article titles from the past 7 days and identify the #{limit} most prominent trending topics.
+
+      Titles:
+      #{all_titles}
+
+      Return ONLY valid JSON:
+      {
+        "topics": [
+          {
+            "name": "Short topic name (2-4 words)",
+            "keywords": ["keyword1", "keyword2"],
+            "emoji": "single relevant emoji"
+          }
+        ]
+      }
+
+      Rules:
+      - Topics should be specific (e.g., "OpenAI GPT-5" not just "AI")
+      - Keywords should match words likely in article titles
+      - Order by prominence/frequency
+    PROMPT
+
+    result = chat(prompt, system: "You are a JSON-only responder. Output valid JSON with no markdown.")
+    json_match = result&.match(/\{.*\}/m)
+    return [] unless json_match
+
+    JSON.parse(json_match[0])["topics"] || []
+  rescue => e
+    Rails.logger.error "Trending topics error: #{e.message}"
     []
   end
 
