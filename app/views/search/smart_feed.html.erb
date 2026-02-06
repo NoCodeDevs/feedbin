@@ -202,9 +202,9 @@
           <% @entries.each do |entry| %>
             <% plain_summary = ActionController::Base.helpers.strip_tags(entry.summary || entry.content || '').gsub(/\s+/, ' ').strip[0..120] %>
             <a href="<%= entry.url %>" class="card" target="_blank" rel="noopener">
-              <% if entry.image_url.present? %>
+              <% if entry.processed_image.present? %>
                 <div class="card-image">
-                  <img src="<%= entry.image_url %>" alt="" loading="lazy" onerror="this.closest('.card').style.display='none'">
+                  <img src="<%= entry.processed_image %>" alt="" loading="lazy" onerror="this.closest('.card').style.display='none'">
                   <span class="badge"><%= entry.feed&.title&.split(/[.\s]/)&.first %></span>
                 </div>
               <% end %>

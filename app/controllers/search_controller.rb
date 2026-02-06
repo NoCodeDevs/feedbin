@@ -97,7 +97,7 @@ class SearchController < ApplicationController
     # Get recent entries (last 48 hours) to answer from
     entries = Entry.includes(:feed)
                    .where("published > ?", 48.hours.ago)
-                   .where("image->>'processed_url' IS NOT NULL")
+                   .where("image->>'processed_url' IS NOT NULL AND image->>'original_url' IS NOT NULL AND image->>'width' IS NOT NULL AND image->>'height' IS NOT NULL")
                    .order(published: :desc)
                    .limit(50)
 
@@ -136,14 +136,14 @@ class SearchController < ApplicationController
 
   def search_entries_scope(query, category = nil)
     sanitized = query.gsub(/[^\w\s]/, ' ').split.map { |w| "#{w}:*" }.join(' & ')
-    scope = Entry.includes(:feed).where("image->>'processed_url' IS NOT NULL")
+    scope = Entry.includes(:feed).where("image->>'processed_url' IS NOT NULL AND image->>'original_url' IS NOT NULL AND image->>'width' IS NOT NULL AND image->>'height' IS NOT NULL")
     scope = scope.where("categories @> ?", [category].to_json) if category.present?
     scope.where(
       "to_tsvector('english', coalesce(title, '') || ' ' || coalesce(summary, '')) @@ to_tsquery('english', ?)",
       sanitized
     ).order(published: :desc)
   rescue
-    scope = Entry.includes(:feed).where("image->>'processed_url' IS NOT NULL")
+    scope = Entry.includes(:feed).where("image->>'processed_url' IS NOT NULL AND image->>'original_url' IS NOT NULL AND image->>'width' IS NOT NULL AND image->>'height' IS NOT NULL")
     scope = scope.where("categories @> ?", [category].to_json) if category.present?
     scope.where("title ILIKE ? OR summary ILIKE ?", "%#{query}%", "%#{query}%").order(published: :desc)
   end
@@ -171,7 +171,7 @@ class SearchController < ApplicationController
     return Entry.none if conditions.empty?
 
     Entry.includes(:feed)
-         .where("image->>'processed_url' IS NOT NULL")
+         .where("image->>'processed_url' IS NOT NULL AND image->>'original_url' IS NOT NULL AND image->>'width' IS NOT NULL AND image->>'height' IS NOT NULL")
          .where(conditions.join(' AND '), *values)
          .order(published: :desc)
          .limit(30)
