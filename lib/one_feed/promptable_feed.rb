@@ -18,7 +18,7 @@ module OneFeed
       since_time = @since.is_a?(ActiveSupport::Duration) ? @since.ago : @since
       base = Entry.includes(:feed)
                   .where("published > ?", since_time)
-                  .where.not(image_url: [nil, ''])
+                  .where("image->>'processed_url' IS NOT NULL")
                   .order(published: :desc)
                   .limit(@limit)
       base = base.where(feed_id: @feed_id) if @feed_id.present?

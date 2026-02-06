@@ -379,6 +379,93 @@
     .infinite-sentinel.loading { color: var(--accent-2); }
     .infinite-sentinel.done { display: none; }
 
+    .ai-response {
+      display: none;
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%);
+      border: 1px solid rgba(124, 58, 237, 0.3);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 32px;
+    }
+    .ai-response.visible { display: block; }
+    .ai-response.loading { opacity: 0.7; }
+    .ai-response-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .ai-response-icon {
+      width: 24px;
+      height: 24px;
+      background: var(--accent);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+    .ai-response-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent-2);
+    }
+    .ai-response-close {
+      margin-left: auto;
+      background: none;
+      border: none;
+      color: var(--text-4);
+      cursor: pointer;
+      font-size: 18px;
+      padding: 4px 8px;
+    }
+    .ai-response-close:hover { color: var(--text); }
+    .ai-response-text {
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--text-2);
+    }
+    .ai-response-text p { margin-bottom: 12px; }
+    .ai-response-text p:last-child { margin-bottom: 0; }
+    .ai-response-sources {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(124, 58, 237, 0.2);
+    }
+    .ai-response-sources-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-4);
+      margin-bottom: 10px;
+    }
+    .ai-source-link {
+      display: inline-block;
+      padding: 6px 12px;
+      background: var(--surface-2);
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--text-2);
+      text-decoration: none;
+      margin-right: 8px;
+      margin-bottom: 8px;
+      transition: background 0.15s;
+    }
+    .ai-source-link:hover { background: var(--surface-3); color: var(--text); }
+    .ai-loading-spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--accent-2);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
     @media (max-width: 1000px) {
       .grid { grid-template-columns: repeat(2, 1fr); }
       .sources-sidebar { width: 220px; }
@@ -411,8 +498,8 @@
   <header class="header">
     <div class="header-inner">
       <a href="/" class="logo">The Feed</a>
-      <form action="/search/smart_feed" method="get" class="search-form">
-        <input type="text" name="prompt" class="search-input" value="<%= @query %>" placeholder="Describe what you want to see..." autofocus>
+      <form action="/search/smart_feed" method="get" class="search-form" id="ask-form">
+        <input type="text" name="prompt" class="search-input" id="ask-input" value="<%= @query %>" placeholder="Ask anything about your feed..." autofocus>
       </form>
       <button type="button" class="add-feed-btn" id="add-feed-open">Add feed</button>
     </div>
@@ -472,6 +559,80 @@
       });
     })();
   </script>
+  <script>
+    (function() {
+      var form = document.getElementById('ask-form');
+      var input = document.getElementById('ask-input');
+      var responseEl = document.getElementById('ai-response');
+      var answerEl = document.getElementById('ai-answer');
+      var sourcesEl = document.getElementById('ai-sources');
+      var sourcesListEl = document.getElementById('ai-sources-list');
+      var closeBtn = document.getElementById('ai-close');
+
+      function isQuestion(text) {
+        var questionPatterns = /^(what|who|where|when|why|how|is|are|can|could|should|would|do|does|did|will|has|have|which|tell|explain|summarize|describe|show|find|list|compare)/i;
+        return questionPatterns.test(text.trim()) || text.includes('?');
+      }
+
+      form.addEventListener('submit', function(e) {
+        var query = input.value.trim();
+        if (!query) return;
+
+        // If it looks like a question, use the Ask endpoint
+        if (isQuestion(query)) {
+          e.preventDefault();
+
+          responseEl.classList.add('visible', 'loading');
+          answerEl.innerHTML = '<span class="ai-loading-spinner"></span> Thinking...';
+          sourcesEl.style.display = 'none';
+
+          fetch('/search/ask', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+            },
+            body: JSON.stringify({ q: query })
+          })
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            responseEl.classList.remove('loading');
+            if (data.error) {
+              answerEl.textContent = data.error;
+              return;
+            }
+
+            // Convert markdown-style formatting
+            var answer = data.answer || 'No answer available.';
+            answer = answer.replace(/\n\n/g, '</p><p>');
+            answer = answer.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+            answer = answer.replace(/\[([^\]]+)\]/g, '<em>[$1]</em>');
+            answerEl.innerHTML = '<p>' + answer + '</p>';
+
+            if (data.sources && data.sources.length > 0) {
+              sourcesEl.style.display = 'block';
+              sourcesListEl.innerHTML = data.sources.map(function(s) {
+                return '<a href="' + s.url + '" target="_blank" class="ai-source-link">' + (s.source || s.title) + '</a>';
+              }).join('');
+            } else {
+              sourcesEl.style.display = 'none';
+            }
+          })
+          .catch(function(err) {
+            responseEl.classList.remove('loading');
+            answerEl.textContent = 'Failed to get answer. Please try again.';
+          });
+        }
+        // Otherwise, let the form submit normally to smart_feed
+      });
+
+      closeBtn.addEventListener('click', function() {
+        responseEl.classList.remove('visible');
+        answerEl.innerHTML = '';
+        sourcesEl.style.display = 'none';
+      });
+    })();
+  </script>
 
   <div class="search-layout">
     <%= render "sources_sidebar", sources: @sources, feed_id: @feed_id, smart_feed: false, prompt: nil %>
@@ -493,6 +654,19 @@
         <a href="/?category=<%= cat %>" class="category-pill <%= 'active' if @category == cat %>"><%= cat %></a>
       <% end %>
     </nav>
+
+    <div id="ai-response" class="ai-response">
+      <div class="ai-response-header">
+        <div class="ai-response-icon">AI</div>
+        <span class="ai-response-label">Feed Assistant</span>
+        <button type="button" class="ai-response-close" id="ai-close">&times;</button>
+      </div>
+      <div class="ai-response-text" id="ai-answer"></div>
+      <div class="ai-response-sources" id="ai-sources" style="display:none;">
+        <div class="ai-response-sources-title">Sources</div>
+        <div id="ai-sources-list"></div>
+      </div>
+    </div>
 
     <div id="entries-container">
       <% if @entries.any? %>

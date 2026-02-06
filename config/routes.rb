@@ -7,6 +7,7 @@ Rails.application.routes.draw do
   get "search", to: "search#index"
   get "search/ai", to: "search#ai_search"
   get "search/smart_feed", to: "search#smart_feed"
+  post "search/ask", to: "search#ask"
 
   post "feed_requests", to: "feed_requests#create"
   

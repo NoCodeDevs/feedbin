@@ -77,27 +77,73 @@ class SearchController < ApplicationController
 
     # Use AI to understand the query and generate search terms
     search_terms = ai_understand_query(query)
-    
+
     entries = search_entries_smart(search_terms)
-    
+
     render json: {
       interpreted_as: search_terms[:interpretation],
       results: entries.map { |e| entry_json(e) }
     }
   end
 
+  def ask
+    question = params[:q].to_s.strip
+    return render json: { error: "No question provided" }, status: 400 if question.blank?
+
+    unless ENV['ANTHROPIC_API_KEY'] || ENV['OPENAI_API_KEY']
+      return render json: { error: "AI features require an API key" }, status: 503
+    end
+
+    # Get recent entries (last 48 hours) to answer from
+    entries = Entry.includes(:feed)
+                   .where("published > ?", 48.hours.ago)
+                   .where("image->>'processed_url' IS NOT NULL")
+                   .order(published: :desc)
+                   .limit(50)
+
+    if entries.empty?
+      return render json: { answer: "No recent articles found to answer your question.", sources: [] }
+    end
+
+    # Prepare context for the AI
+    context_articles = entries.map do |e|
+      {
+        id: e.id,
+        title: e.title,
+        source: e.feed&.title,
+        summary: ActionController::Base.helpers.strip_tags(e.summary.to_s)[0..500],
+        url: e.url
+      }
+    end
+
+    enhancer = AIEnhancer.new
+    answer = enhancer.answer_question(question, context_articles)
+
+    # Extract mentioned sources from the answer
+    sources = context_articles.select do |a|
+      answer.include?(a[:source].to_s) || answer.include?(a[:title].to_s[0..30])
+    end.first(5).map do |a|
+      { title: a[:title], source: a[:source], url: a[:url], id: a[:id] }
+    end
+
+    render json: { answer: answer, sources: sources }
+  rescue => e
+    Rails.logger.error "Ask error: #{e.message}"
+    render json: { error: "Failed to process question" }, status: 500
+  end
+
   private
 
   def search_entries_scope(query, category = nil)
     sanitized = query.gsub(/[^\w\s]/, ' ').split.map { |w| "#{w}:*" }.join(' & ')
-    scope = Entry.includes(:feed).where.not(image_url: [nil, ''])
+    scope = Entry.includes(:feed).where("image->>'processed_url' IS NOT NULL")
     scope = scope.where("categories @> ?", [category].to_json) if category.present?
     scope.where(
       "to_tsvector('english', coalesce(title, '') || ' ' || coalesce(summary, '')) @@ to_tsquery('english', ?)",
       sanitized
     ).order(published: :desc)
   rescue
-    scope = Entry.includes(:feed).where.not(image_url: [nil, ''])
+    scope = Entry.includes(:feed).where("image->>'processed_url' IS NOT NULL")
     scope = scope.where("categories @> ?", [category].to_json) if category.present?
     scope.where("title ILIKE ? OR summary ILIKE ?", "%#{query}%", "%#{query}%").order(published: :desc)
   end
@@ -125,7 +171,7 @@ class SearchController < ApplicationController
     return Entry.none if conditions.empty?
 
     Entry.includes(:feed)
-         .where.not(image_url: [nil, ''])
+         .where("image->>'processed_url' IS NOT NULL")
          .where(conditions.join(' AND '), *values)
          .order(published: :desc)
          .limit(30)
