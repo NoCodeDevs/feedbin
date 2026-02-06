@@ -43,6 +43,9 @@ module FeedCrawler
     def create_entry(item, feed)
       if alternate_exists?(item)
         Librato.increment("entry.alternate_exists")
+      elsif !has_potential_image?(item)
+        Librato.increment("entry.skipped_no_image")
+        Sidekiq.logger.info "Skipping entry without image=#{item["public_id"]}"
       else
         entry = if item["url"].present?
           feed.entries.find_or_initialize_by(url: item["url"])
@@ -54,6 +57,20 @@ module FeedCrawler
         Librato.increment("entry.create") if entry.previously_new_record?
         Sidekiq.logger.info "Creating entry=#{item["public_id"]}" if entry.previously_new_record?
       end
+    end
+
+    def has_potential_image?(item)
+      content = item["content"].to_s
+      # Check for img tags in content
+      return true if content.include?("<img")
+      # Check for figure/picture elements
+      return true if content.include?("<figure") || content.include?("<picture")
+      # Check for media/enclosure data
+      data = item["data"] || {}
+      return true if data["itunes_image"].present?
+      return true if data["media_content"].present?
+      return true if data["enclosure_url"].present?
+      false
     end
 
     def alternate_exists?(item)
