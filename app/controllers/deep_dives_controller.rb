@@ -19,6 +19,13 @@ class DeepDivesController < ApplicationController
       format.html { render layout: false }
       format.json { render json: @deep_dive }
     end
+  rescue => e
+    Rails.logger.error "Deep dive error: #{e.message}\n#{e.backtrace.first(5).join("\n")}"
+    @deep_dive = empty_deep_dive(@topic).merge(error: "Failed to generate deep dive: #{e.message}")
+    respond_to do |format|
+      format.html { render layout: false }
+      format.json { render json: @deep_dive, status: 500 }
+    end
   end
 
   private
@@ -42,7 +49,7 @@ class DeepDivesController < ApplicationController
         summary: ActionController::Base.helpers.strip_tags(e.summary.to_s)[0..500],
         content: ActionController::Base.helpers.strip_tags(e.content.to_s)[0..800],
         url: e.url,
-        image: e.processed_image,
+        image: e.processed_image_url || e.image_url,
         published: e.published
       }
     end
