@@ -831,67 +831,43 @@
       var sourcesListEl = document.getElementById('ai-sources-list');
       var closeBtn = document.getElementById('ai-close');
 
-      function isQuestion(text) {
-        var questionPatterns = /^(what|who|where|when|why|how|is|are|can|could|should|would|do|does|did|will|has|have|which|tell|explain|summarize|describe|show|find|list|compare)/i;
-        return questionPatterns.test(text.trim()) || text.includes('?');
-      }
-
       form.addEventListener('submit', function(e) {
         var query = input.value.trim();
         if (!query) return;
 
-        // If it looks like a question, use the Ask endpoint
-        if (isQuestion(query)) {
-          e.preventDefault();
+        // Prevent default form submission - we'll handle it with JS
+        e.preventDefault();
 
-          responseEl.classList.add('visible', 'loading');
-          answerEl.innerHTML = '<span class="ai-loading-spinner"></span> Thinking...';
-          sourcesEl.style.display = 'none';
+        // Update URL
+        var encodedQuery = encodeURIComponent(query);
+        window.history.pushState({}, '', '/?q=' + encodedQuery);
 
-          fetch('/search/ask', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-            },
-            body: JSON.stringify({ q: query })
-          })
+        // Show the topic analysis panel with loading
+        var panel = document.getElementById('topic-analysis');
+        var loading = panel.querySelector('.analysis-loading');
+        var content = panel.querySelector('.analysis-content');
+        panel.style.display = 'block';
+        loading.style.display = 'flex';
+        content.innerHTML = '';
+
+        // Fetch AI analysis
+        fetch('/search/analyze_topic?q=' + encodedQuery)
           .then(function(r) { return r.json(); })
           .then(function(data) {
-            responseEl.classList.remove('loading');
-            if (data.error) {
-              answerEl.textContent = data.error;
-              return;
-            }
-
-            // Convert markdown-style formatting
-            var answer = data.answer || 'No answer available.';
-            answer = answer.replace(/\n\n/g, '</p><p>');
-            answer = answer.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-            answer = answer.replace(/\[([^\]]+)\]/g, '<em>[$1]</em>');
-            answerEl.innerHTML = '<p>' + answer + '</p>';
-
-            if (data.sources && data.sources.length > 0) {
-              sourcesEl.style.display = 'block';
-              sourcesListEl.innerHTML = data.sources.map(function(s) {
-                return '<a href="' + s.url + '" target="_blank" class="ai-source-link">' + (s.source || s.title) + '</a>';
-              }).join('');
-            } else {
-              sourcesEl.style.display = 'none';
-            }
+            loading.style.display = 'none';
+            content.innerHTML = renderTopicAnalysis(data);
           })
           .catch(function(err) {
-            responseEl.classList.remove('loading');
-            answerEl.textContent = 'Failed to get answer. Please try again.';
+            loading.style.display = 'none';
+            content.innerHTML = '<p class="analysis-empty">Analysis failed. Please try again.</p>';
           });
-        }
-        // Otherwise, let the form submit normally to smart_feed
-      });
 
-      closeBtn.addEventListener('click', function() {
-        responseEl.classList.remove('visible');
-        answerEl.innerHTML = '';
-        sourcesEl.style.display = 'none';
+        // Also load search results
+        loadSearchResults(query);
+
+        // Update page title
+        var title = document.querySelector('.page-title');
+        if (title) title.textContent = 'Search: "' + query + '"';
       });
     })();
   </script>
