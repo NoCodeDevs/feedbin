@@ -255,8 +255,19 @@ class SearchController < ApplicationController
 
   private
 
+  STOP_WORDS = %w[a an the is are was were be been being have has had do does did will would could should may might must shall can what who where when why how which that this these those i me my we our you your he she it they them their its about above after again all also am any as at before below between both but by for from here in into just more most no not now of off on only or other out over own same so some such than then there through to too under up very with whats going tell explain show find].to_set
+
   def search_entries_scope(query, category = nil)
-    sanitized = query.gsub(/[^\w\s]/, ' ').split.map { |w| "#{w}:*" }.join(' & ')
+    # Extract meaningful words, filtering stop words
+    words = query.downcase.gsub(/[^\w\s]/, ' ').split.reject { |w| STOP_WORDS.include?(w) || w.length < 2 }
+
+    # If no meaningful words left, try the original query
+    words = query.gsub(/[^\w\s]/, ' ').split if words.empty?
+
+    # Use OR logic for natural language queries (more than 2 words), AND for short queries
+    join_operator = words.size > 2 ? ' | ' : ' & '
+    sanitized = words.map { |w| "#{w}:*" }.join(join_operator)
+
     scope = Entry.includes(:feed).where("image->>'processed_url' IS NOT NULL AND image->>'original_url' IS NOT NULL AND image->>'width' IS NOT NULL AND image->>'height' IS NOT NULL")
     scope = scope.where(category_filter_sql(category)) if category.present?
     scope.where(
@@ -266,7 +277,12 @@ class SearchController < ApplicationController
   rescue
     scope = Entry.includes(:feed).where("image->>'processed_url' IS NOT NULL AND image->>'original_url' IS NOT NULL AND image->>'width' IS NOT NULL AND image->>'height' IS NOT NULL")
     scope = scope.where(category_filter_sql(category)) if category.present?
-    scope.where("title ILIKE ? OR summary ILIKE ?", "%#{query}%", "%#{query}%").order(published: :desc)
+    # Fallback: ILIKE search with any of the meaningful words
+    words = query.downcase.gsub(/[^\w\s]/, ' ').split.reject { |w| STOP_WORDS.include?(w) || w.length < 2 }
+    words = [query] if words.empty?
+    conditions = words.map { "title ILIKE ? OR summary ILIKE ?" }
+    values = words.flat_map { |w| ["%#{w}%", "%#{w}%"] }
+    scope.where(conditions.join(' OR '), *values).order(published: :desc)
   end
 
   def search_entries(query, category = nil)
