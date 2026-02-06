@@ -24,6 +24,11 @@
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
+    html, body {
+      overflow-x: hidden;
+      max-width: 100vw;
+    }
+
     body {
       font-family: 'Inter', system-ui, sans-serif;
       background: var(--bg);
@@ -150,6 +155,27 @@
     .categories.expanded .category-hidden { display: inline-flex; }
     .categories.expanded .category-more { display: none; }
     .category-more { color: var(--accent-2); border-color: var(--accent); }
+
+    /* Mobile category dropdown */
+    .categories-mobile { display: none; margin-bottom: 20px; }
+    .category-select {
+      width: 100%;
+      padding: 14px 16px;
+      font-size: 16px;
+      font-family: inherit;
+      font-weight: 500;
+      color: var(--text);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23737373'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 20px;
+      cursor: pointer;
+    }
+    .category-select:focus { outline: none; border-color: var(--accent); }
 
     .grid {
       display: grid;
@@ -994,10 +1020,8 @@
       .card-excerpt { font-size: 14px; -webkit-line-clamp: 2; }
       .card-meta { font-size: 13px; margin-top: 10px; }
       .card-ai-btn { width: 36px; height: 36px; font-size: 11px; bottom: 10px; right: 10px; opacity: 1; }
-      .categories { margin-bottom: 20px; gap: 8px; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 4px; }
-      .category-pill { padding: 10px 16px; font-size: 14px; flex-shrink: 0; }
-      .category-hidden { display: none !important; }
-      .category-more { display: inline-flex !important; }
+      .categories-desktop { display: none !important; }
+      .categories-mobile { display: block; }
       .trending-sidebar { padding: 12px 16px; }
       .trending-sidebar-title { font-size: 10px; margin-bottom: 10px; }
       .trending-item { padding: 8px 12px; gap: 8px; min-height: 44px; }
@@ -1279,6 +1303,15 @@
       nav.classList.toggle('expanded');
     }
 
+    function selectCategory(category) {
+      if (category) {
+        analyzeCategory({ preventDefault: function(){}, stopPropagation: function(){} }, encodeURIComponent(category));
+      } else {
+        closeAnalysis();
+        window.location.href = '/';
+      }
+    }
+
     function escapeHtml(text) {
       if (!text) return '';
       var div = document.createElement('div');
@@ -1414,13 +1447,24 @@
       <p class="page-subtitle"><%= @total_count %> articles</p>
     </div>
 
-    <nav class="categories" id="categories-nav">
+    <!-- Desktop categories -->
+    <nav class="categories categories-desktop" id="categories-nav">
       <a href="/" class="category-pill" onclick="closeAnalysis()">← All</a>
       <% %w[AI/ML Programming Security DevOps Web Gaming Business Science Design Culture News Tutorial].each_with_index do |cat, i| %>
         <a href="#" class="category-pill <%= 'active' if @category == cat %> <%= 'category-hidden' if i >= 7 %>" data-category="<%= cat %>" onclick="analyzeCategory(event, '<%= CGI.escape(cat) %>')"><%= cat %></a>
       <% end %>
       <button type="button" class="category-pill category-more" id="show-more-cats" onclick="toggleCategories()">More +</button>
     </nav>
+
+    <!-- Mobile category dropdown -->
+    <div class="categories-mobile">
+      <select class="category-select" onchange="selectCategory(this.value)">
+        <option value="">All Categories</option>
+        <% %w[AI/ML Programming Security DevOps Web Gaming Business Science Design Culture News Tutorial].each do |cat| %>
+          <option value="<%= cat %>" <%= 'selected' if @category == cat %>><%= cat %></option>
+        <% end %>
+      </select>
+    </div>
 
     <div id="ai-response" class="ai-response">
       <div class="ai-response-header">
