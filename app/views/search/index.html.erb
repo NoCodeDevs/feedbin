@@ -57,6 +57,24 @@
       text-decoration: none;
     }
 
+    .header-nav {
+      display: flex;
+      gap: 4px;
+    }
+
+    .header-nav-link {
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-3);
+      text-decoration: none;
+      transition: all 0.15s;
+    }
+
+    .header-nav-link:hover { color: var(--text); background: var(--surface-2); }
+    .header-nav-link.active { color: var(--accent-2); background: rgba(124, 58, 237, 0.15); }
+
     .search-form {
       flex: 1;
       max-width: 500px;
@@ -577,6 +595,10 @@
   <header class="header">
     <div class="header-inner">
       <a href="/" class="logo">The Feed</a>
+      <nav class="header-nav">
+        <a href="/" class="header-nav-link active">Browse</a>
+        <a href="/stories" class="header-nav-link">Stories</a>
+      </nav>
       <form action="/search/smart_feed" method="get" class="search-form" id="ask-form">
         <input type="text" name="prompt" class="search-input" id="ask-input" value="<%= @query %>" placeholder="Ask anything about your feed..." autofocus>
       </form>
