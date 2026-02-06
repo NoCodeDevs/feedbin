@@ -1,6 +1,7 @@
 ---
 :concurrency: 10
 :queues:
+  - [low,                                    1]
   - [crawl,                                  1]
   - [crawl_<%= `hostname`.strip %>,          1]
   - [crawl_images,                           2]

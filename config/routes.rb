@@ -11,6 +11,11 @@ Rails.application.routes.draw do
   get "search/summarize_article/:id", to: "search#summarize_article"
   post "search/ask", to: "search#ask"
 
+  # Custom Feed Builder & Deep Dive
+  get "feed/:slug", to: "custom_feeds#show", as: "custom_feed"
+  get "feed", to: "custom_feeds#index", as: "feed_builder"
+  get "deep-dive/:topic", to: "deep_dives#show", as: "deep_dive"
+
   get "stories", to: "stories#index"
   get "stories/compare", to: "stories#compare"
 

@@ -318,6 +318,78 @@ class AIEnhancer
     []
   end
 
+  # Generate comprehensive deep dive content for a topic (Wikipedia-style)
+  def generate_deep_dive(topic, articles)
+    return empty_deep_dive_result if articles.empty?
+
+    # Build rich context from articles
+    articles_text = articles.first(25).map.with_index do |a, i|
+      summary = a[:summary].to_s.gsub(/<[^>]+>/, ' ').gsub(/\s+/, ' ').strip[0..300]
+      content = a[:content].to_s.gsub(/<[^>]+>/, ' ').gsub(/\s+/, ' ').strip[0..400]
+      "[#{i}] #{a[:title]} (#{a[:source]}, #{a[:published]&.strftime('%b %d')})\n#{summary}\n#{content}"
+    end.join("\n\n")
+
+    prompt = <<~PROMPT
+      Create a comprehensive "Deep Dive" analysis about "#{topic}" based on these recent articles:
+
+      #{articles_text}
+
+      Return ONLY valid JSON with this structure:
+      {
+        "summary": "A comprehensive 4-6 sentence overview of this topic - what it is, why it matters now, and key recent developments. Write like a Wikipedia introduction.",
+        "key_points": [
+          "Major point 1 with specific details",
+          "Major point 2 with specific details",
+          "Major point 3 with specific details",
+          "Major point 4 with specific details",
+          "Major point 5 with specific details"
+        ],
+        "key_players": [
+          {"name": "Person or Company", "role": "Their role/relevance to this topic", "recent": "What they did recently"}
+        ],
+        "key_article_indices": [0, 1, 2, 3, 4],
+        "related_topics": ["Related Topic 1", "Related Topic 2", "Related Topic 3"],
+        "sentiment": "positive|negative|mixed|neutral"
+      }
+
+      Guidelines:
+      - Summary should read like Wikipedia - authoritative and comprehensive
+      - Key points should be specific facts, not vague observations
+      - Include 3-5 key players (companies, people, organizations) mentioned across articles
+      - Select the 5 most important/comprehensive articles by index
+      - Related topics should be searchable terms a reader might want to explore next
+      - Sentiment reflects overall tone of coverage
+    PROMPT
+
+    result = chat(prompt, system: "You are an expert research analyst creating comprehensive topic briefings. Output valid JSON only, no markdown formatting.")
+    json_match = result&.match(/\{.*\}/m)
+    return empty_deep_dive_result unless json_match
+
+    data = JSON.parse(json_match[0])
+
+    # Map article indices to full article data
+    key_indices = data["key_article_indices"] || []
+    key_articles = key_indices.first(5).map { |i| articles[i.to_i] }.compact.map do |a|
+      { id: a[:id], title: a[:title], source: a[:source], url: a[:url], image: a[:image] }
+    end
+
+    {
+      summary: data["summary"] || "",
+      key_points: data["key_points"] || [],
+      key_players: data["key_players"] || [],
+      key_articles: key_articles,
+      related_topics: data["related_topics"] || [],
+      sentiment: data["sentiment"] || "neutral"
+    }
+  rescue => e
+    Rails.logger.error "Deep dive generation error: #{e.message}"
+    empty_deep_dive_result
+  end
+
+  def empty_deep_dive_result
+    { summary: "", key_points: [], key_players: [], key_articles: [], related_topics: [], sentiment: "neutral" }
+  end
+
   # Compare how different sources cover the same story
   def compare_coverage(articles)
     return nil if articles.size < 2

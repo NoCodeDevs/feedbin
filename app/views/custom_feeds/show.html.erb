@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=5">
+  <title><%= @selected_categories.join(" + ") %> - The Feed</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #000000;
+      --surface: #0a0a0a;
+      --surface-2: #141414;
+      --surface-3: #1a1a1a;
+      --text: #ffffff;
+      --text-2: #e5e5e5;
+      --text-3: #a3a3a3;
+      --text-4: #737373;
+      --accent: #7c3aed;
+      --accent-2: #8b5cf6;
+      --border: #262626;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { overflow-x: hidden; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      max-width: 100vw;
+      overflow-x: hidden;
+    }
+
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .logo {
+      font-family: 'Newsreader', serif;
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .header-nav {
+      display: flex;
+      gap: 4px;
+    }
+
+    .header-nav-link {
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-3);
+      text-decoration: none;
+      transition: all 0.15s;
+    }
+
+    .header-nav-link:hover { color: var(--text); background: var(--surface-2); }
+
+    .share-btn {
+      margin-left: auto;
+      padding: 10px 16px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-2);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.15s;
+    }
+
+    .share-btn:hover { background: var(--surface-3); color: var(--text); }
+    .share-btn.copied { background: #22c55e; color: white; border-color: #22c55e; }
+    .share-btn svg { width: 16px; height: 16px; }
+
+    .main {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 32px;
+    }
+
+    .feed-header {
+      margin-bottom: 32px;
+    }
+
+    .feed-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: rgba(124, 58, 237, 0.15);
+      border: 1px solid rgba(124, 58, 237, 0.3);
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent-2);
+      margin-bottom: 16px;
+    }
+
+    .feed-badge svg { width: 16px; height: 16px; }
+
+    .page-title {
+      font-family: 'Newsreader', serif;
+      font-size: 36px;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+
+    .page-subtitle {
+      font-size: 16px;
+      color: var(--text-4);
+    }
+
+    .category-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .category-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-2);
+      text-decoration: none;
+      transition: all 0.15s;
+    }
+
+    .category-pill:hover { background: var(--surface-3); color: var(--text); }
+    .category-pill.active { background: rgba(124, 58, 237, 0.2); border-color: var(--accent); color: var(--accent-2); }
+    .category-pill .remove { opacity: 0.5; margin-left: 4px; }
+    .category-pill:hover .remove { opacity: 1; }
+
+    .edit-link {
+      padding: 8px 14px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--text-3);
+      text-decoration: none;
+      transition: all 0.15s;
+    }
+
+    .edit-link:hover { background: var(--surface-3); color: var(--text); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      background: var(--surface);
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+
+    .card-link {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .card-image {
+      position: relative;
+      aspect-ratio: 16/10;
+      overflow: hidden;
+      background: var(--surface-2);
+    }
+
+    .card-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s;
+    }
+
+    .card:hover .card-image img { transform: scale(1.08); }
+
+    .card-image .badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      padding: 5px 12px;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(10px);
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-2);
+    }
+
+    .card-body {
+      padding: 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-category {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent-2);
+      margin-bottom: 8px;
+    }
+
+    .card-title {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.4;
+      margin-bottom: 8px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card:hover .card-title { color: var(--accent-2); }
+
+    .card-excerpt {
+      font-size: 14px;
+      color: var(--text-3);
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      flex: 1;
+    }
+
+    .card-meta {
+      font-size: 12px;
+      color: var(--text-4);
+      margin-top: 12px;
+    }
+
+    .day-section { margin-bottom: 40px; }
+
+    .day-heading {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-4);
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 80px 20px;
+    }
+
+    .empty-state h2 { font-size: 24px; margin-bottom: 8px; }
+    .empty-state p { color: var(--text-3); margin-bottom: 24px; }
+
+    .infinite-sentinel {
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-4);
+      font-size: 14px;
+    }
+
+    .infinite-sentinel.loading { color: var(--accent-2); }
+    .infinite-sentinel.done { display: none; }
+
+    @media (max-width: 1000px) {
+      .grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 600px) {
+      .header-inner { padding: 12px 16px; gap: 12px; }
+      .logo { font-size: 20px; }
+      .share-btn span { display: none; }
+      .main { padding: 20px 16px; }
+      .page-title { font-size: 28px; }
+      .grid { grid-template-columns: 1fr; gap: 20px; }
+      .category-pills { gap: 6px; }
+      .category-pill { padding: 6px 12px; font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <a href="/" class="logo">The Feed</a>
+      <nav class="header-nav">
+        <a href="/" class="header-nav-link">Browse</a>
+        <a href="/feed" class="header-nav-link">Build Feed</a>
+      </nav>
+      <button type="button" class="share-btn" id="share-btn" onclick="shareUrl()">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+        <span>Share Feed</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="feed-header">
+      <div class="feed-badge">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        Custom Feed
+      </div>
+      <h1 class="page-title"><%= @selected_categories.join(" + ") %></h1>
+      <p class="page-subtitle"><%= @total_count %> articles from your selected topics</p>
+
+      <div class="category-pills">
+        <% @selected_categories.each do |cat| %>
+          <% remaining = @selected_categories - [cat] %>
+          <% new_slug = remaining.map { |c| CGI.escape(c) }.join("+") %>
+          <a href="<%= remaining.any? ? "/feed/#{new_slug}" : "/feed" %>" class="category-pill active">
+            <%= cat %>
+            <span class="remove">&times;</span>
+          </a>
+        <% end %>
+        <a href="/feed" class="edit-link">+ Edit topics</a>
+      </div>
+    </div>
+
+    <div id="entries-container">
+      <% if @entries.any? %>
+        <% @entries_by_day.each do |date, entries| %>
+          <% day_label = date == Date.current ? "Today" : (date == Date.current - 1 ? "Yesterday" : date.strftime("%A, %b %-d")) %>
+          <section class="day-section" data-date="<%= date.iso8601 %>">
+            <h2 class="day-heading"><%= day_label %></h2>
+            <div class="grid">
+              <% entries.each do |entry| %>
+                <% plain_summary = ActionController::Base.helpers.strip_tags(entry.summary || entry.content || '').gsub(/\s+/, ' ').strip[0..120] %>
+                <div class="card" data-entry-id="<%= entry.id %>">
+                  <a href="<%= entry.url %>" class="card-link" target="_blank" rel="noopener">
+                    <% if entry.processed_image.present? %>
+                      <div class="card-image">
+                        <img src="<%= entry.processed_image %>" alt="" loading="lazy" onerror="this.closest('.card').style.display='none'">
+                        <span class="badge"><%= entry.feed&.title&.split(/[.\s]/)&.first %></span>
+                      </div>
+                    <% end %>
+                    <div class="card-body">
+                      <% if entry.category.present? %>
+                        <div class="card-category"><%= entry.category %></div>
+                      <% end %>
+                      <h3 class="card-title"><%= entry.title %></h3>
+                      <% if plain_summary.present? %>
+                        <p class="card-excerpt"><%= plain_summary %>...</p>
+                      <% end %>
+                      <div class="card-meta">
+                        <%= time_ago_in_words(entry.published || entry.created_at) %> ago
+                      </div>
+                    </div>
+                  </a>
+                </div>
+              <% end %>
+            </div>
+          </section>
+        <% end %>
+      <% else %>
+        <div class="empty-state">
+          <h2>No articles found</h2>
+          <p>No articles match your selected categories yet. Try adding more topics.</p>
+          <a href="/feed" class="edit-link" style="display: inline-block; padding: 12px 24px;">Edit Topics</a>
+        </div>
+      <% end %>
+    </div>
+
+    <% if @entries.any? && @entries.total_pages > 1 %>
+      <div id="infinite-sentinel" class="infinite-sentinel" data-page="<%= @page %>" data-total-pages="<%= @entries.total_pages %>" data-slug="<%= @slug %>">
+        Scroll for more
+      </div>
+    <% end %>
+  </main>
+
+  <script>
+    function shareUrl() {
+      var btn = document.getElementById('share-btn');
+      navigator.clipboard.writeText(window.location.href).then(function() {
+        btn.innerHTML = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span>Copied!</span>';
+        btn.classList.add('copied');
+        setTimeout(function() {
+          btn.innerHTML = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg><span>Share Feed</span>';
+          btn.classList.remove('copied');
+        }, 2000);
+      });
+    }
+
+    // Infinite scroll
+    (function() {
+      var sentinel = document.getElementById('infinite-sentinel');
+      if (!sentinel) return;
+      var container = document.getElementById('entries-container');
+      var currentPage = parseInt(sentinel.dataset.page, 10);
+      var totalPages = parseInt(sentinel.dataset.totalPages, 10);
+      var slug = sentinel.dataset.slug;
+
+      var observer = new IntersectionObserver(function(entries) {
+        if (!entries[0].isIntersecting) return;
+        if (currentPage >= totalPages) { sentinel.classList.add('done'); return; }
+        sentinel.classList.add('loading');
+        sentinel.textContent = 'Loading...';
+        var nextPage = currentPage + 1;
+        fetch('/feed/' + slug + '?page=' + nextPage + '&partial=1', { headers: { 'Accept': 'text/html' } })
+          .then(function(r) { return r.text(); })
+          .then(function(html) {
+            var wrap = document.createElement('div');
+            wrap.innerHTML = html;
+            while (wrap.firstChild) container.appendChild(wrap.firstChild);
+            currentPage = nextPage;
+            sentinel.dataset.page = currentPage;
+            sentinel.classList.remove('loading');
+            sentinel.textContent = currentPage >= totalPages ? '' : 'Scroll for more';
+            if (currentPage >= totalPages) sentinel.classList.add('done');
+          });
+      }, { rootMargin: '200px' });
+      observer.observe(sentinel);
+    })();
+  </script>
+</body>
+</html>

@@ -26,9 +26,26 @@ class FeedRequestsController < ApplicationController
       return render json: { error: "This URL doesn't appear to be a valid feed or has no entries." }, status: :unprocessable_entity
     end
 
+    # Check for duplicate by exact URL
     existing = Feed.xml.find_by(feed_url: final_url)
     if existing
       return render json: { error: "This feed is already in the directory.", feed_id: existing.id, title: existing.title }, status: :ok
+    end
+
+    # Check for duplicate by similar URL (without protocol/www)
+    normalized_host = Addressable::URI.parse(final_url).host.to_s.gsub(/^www\./, '')
+    similar = Feed.xml.where("feed_url ILIKE ? OR feed_url ILIKE ?", "%#{normalized_host}%feed%", "%#{normalized_host}%rss%").first
+    if similar
+      return render json: { error: "A similar feed from this source already exists: #{similar.title}", feed_id: similar.id, title: similar.title }, status: :ok
+    end
+
+    # Check for duplicate by exact title
+    feed_title = parsed.title.to_s.strip
+    if feed_title.present?
+      title_match = Feed.xml.where("LOWER(title) = LOWER(?)", feed_title).first
+      if title_match
+        return render json: { error: "A feed with this title already exists: #{title_match.title}", feed_id: title_match.id, title: title_match.title }, status: :ok
+      end
     end
 
     feed = Feed.create_from_parsed_feed(parsed, entry_limit: ENTRY_LIMIT_ON_ADD)

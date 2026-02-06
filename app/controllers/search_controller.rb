@@ -403,7 +403,7 @@ class SearchController < ApplicationController
     return [] unless ENV["ANTHROPIC_API_KEY"] || ENV["OPENAI_API_KEY"]
 
     enhancer = AIEnhancer.new
-    topics = enhancer.extract_trending_topics(entries_by_day, limit: 8)
+    topics = enhancer.extract_trending_topics(entries_by_day, limit: 12)
 
     # Calculate sparkline data for each topic
     topics.map do |topic|
@@ -429,7 +429,7 @@ class SearchController < ApplicationController
         sparkline: daily_counts,
         trend: calculate_trend(daily_counts)
       }
-    end.compact.sort_by { |t| -t[:total] }.first(8)
+    end.compact.sort_by { |t| -t[:total] }.first(12)
   rescue => e
     Rails.logger.error "Trending topics error: #{e.message}"
     []

@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=5">
+  <title>Build Your Feed - The Feed</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #000000;
+      --surface: #0a0a0a;
+      --surface-2: #141414;
+      --surface-3: #1a1a1a;
+      --text: #ffffff;
+      --text-2: #e5e5e5;
+      --text-3: #a3a3a3;
+      --text-4: #737373;
+      --accent: #7c3aed;
+      --accent-2: #8b5cf6;
+      --border: #262626;
+      --success: #22c55e;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .logo {
+      font-family: 'Newsreader', serif;
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .hero {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 80px 32px 60px;
+      text-align: center;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: rgba(124, 58, 237, 0.15);
+      border: 1px solid rgba(124, 58, 237, 0.3);
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent-2);
+      margin-bottom: 24px;
+    }
+
+    .hero-badge svg { width: 16px; height: 16px; }
+
+    .hero-title {
+      font-family: 'Newsreader', serif;
+      font-size: 48px;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+
+    .hero-subtitle {
+      font-size: 18px;
+      color: var(--text-3);
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .builder {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 32px 80px;
+    }
+
+    .builder-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .section-number {
+      width: 32px;
+      height: 32px;
+      background: var(--accent);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+    }
+
+    .category-option {
+      position: relative;
+    }
+
+    .category-option input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .category-option label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 20px 16px;
+      background: var(--surface-2);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .category-option label:hover {
+      background: var(--surface-3);
+      border-color: var(--text-4);
+    }
+
+    .category-option input:checked + label {
+      background: rgba(124, 58, 237, 0.15);
+      border-color: var(--accent);
+    }
+
+    .category-option input:checked + label .category-check {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .category-emoji {
+      font-size: 28px;
+    }
+
+    .category-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-2);
+    }
+
+    .category-check {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 20px;
+      height: 20px;
+      background: var(--accent);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transform: scale(0.5);
+      transition: all 0.2s;
+    }
+
+    .category-check svg { width: 12px; height: 12px; color: white; }
+
+    .preview-section {
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%);
+      border: 1px solid rgba(124, 58, 237, 0.3);
+    }
+
+    .url-preview {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      background: var(--surface-2);
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+
+    .url-preview-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--accent);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .url-preview-icon svg { width: 20px; height: 20px; color: white; }
+
+    .url-preview-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .url-preview-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-4);
+      margin-bottom: 4px;
+    }
+
+    .url-preview-url {
+      font-family: 'SF Mono', monospace;
+      font-size: 14px;
+      color: var(--text-2);
+      word-break: break-all;
+    }
+
+    .url-preview-url .highlight {
+      color: var(--accent-2);
+      font-weight: 500;
+    }
+
+    .copy-btn {
+      padding: 10px 16px;
+      background: var(--surface-3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-2);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+
+    .copy-btn:hover { background: var(--border); color: var(--text); }
+    .copy-btn.copied { background: var(--success); color: white; border-color: var(--success); }
+
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn-primary {
+      flex: 1;
+      padding: 16px 24px;
+      background: var(--accent);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary:hover { background: var(--accent-2); transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-primary svg { width: 18px; height: 18px; }
+
+    .btn-secondary {
+      padding: 16px 24px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text-2);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-decoration: none;
+    }
+
+    .btn-secondary:hover { background: var(--surface-3); color: var(--text); }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-4);
+    }
+
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    .selected-count {
+      font-size: 13px;
+      color: var(--accent-2);
+      margin-top: 16px;
+    }
+
+    @media (max-width: 600px) {
+      .hero { padding: 48px 20px 40px; }
+      .hero-title { font-size: 32px; }
+      .hero-subtitle { font-size: 16px; }
+      .builder { padding: 0 16px 60px; }
+      .builder-section { padding: 24px 20px; }
+      .category-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .category-option label { padding: 16px 12px; }
+      .category-emoji { font-size: 24px; }
+      .category-name { font-size: 13px; }
+      .action-buttons { flex-direction: column; }
+      .url-preview { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <a href="/" class="logo">The Feed</a>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-badge">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+      Custom Feed Builder
+    </div>
+    <h1 class="hero-title">Build Your Perfect Feed</h1>
+    <p class="hero-subtitle">Select the topics you care about and get a personalized, shareable feed URL. No account needed.</p>
+  </section>
+
+  <div class="builder">
+    <div class="builder-section">
+      <div class="section-header">
+        <div class="section-number">1</div>
+        <h2 class="section-title">Choose Your Topics</h2>
+      </div>
+
+      <div class="category-grid" id="category-grid">
+        <% category_emojis = {
+          "AI/ML" => "🤖", "Programming" => "💻", "Security" => "🔒",
+          "DevOps" => "🚀", "Web" => "🌐", "Gaming" => "🎮",
+          "Business" => "📈", "Science" => "🔬", "Design" => "🎨",
+          "Culture" => "🎭", "News" => "📰", "Tutorial" => "📚"
+        } %>
+        <% @categories.each do |cat| %>
+          <div class="category-option">
+            <input type="checkbox" id="cat-<%= cat.parameterize %>" value="<%= cat %>" onchange="updatePreview()">
+            <label for="cat-<%= cat.parameterize %>">
+              <span class="category-check">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+              </span>
+              <span class="category-emoji"><%= category_emojis[cat] || "📁" %></span>
+              <span class="category-name"><%= cat %></span>
+            </label>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="selected-count" id="selected-count"></div>
+    </div>
+
+    <div class="builder-section preview-section">
+      <div class="section-header">
+        <div class="section-number">2</div>
+        <h2 class="section-title">Your Feed URL</h2>
+      </div>
+
+      <div id="preview-empty" class="empty-state">
+        <div class="empty-state-icon">👆</div>
+        <p>Select at least one topic above to generate your feed URL</p>
+      </div>
+
+      <div id="preview-content" style="display: none;">
+        <div class="url-preview">
+          <div class="url-preview-icon">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+          </div>
+          <div class="url-preview-content">
+            <div class="url-preview-label">Shareable URL</div>
+            <div class="url-preview-url" id="url-display"></div>
+          </div>
+          <button type="button" class="copy-btn" id="copy-btn" onclick="copyUrl()">Copy</button>
+        </div>
+
+        <div class="action-buttons">
+          <a href="#" class="btn-primary" id="open-feed-btn">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            Open My Feed
+          </a>
+          <a href="/" class="btn-secondary">Back to Browse</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var baseUrl = '<%= request.base_url %>/feed/';
+
+    function getSelectedCategories() {
+      var checkboxes = document.querySelectorAll('#category-grid input:checked');
+      return Array.from(checkboxes).map(function(cb) { return cb.value; });
+    }
+
+    function updatePreview() {
+      var selected = getSelectedCategories();
+      var emptyEl = document.getElementById('preview-empty');
+      var contentEl = document.getElementById('preview-content');
+      var urlDisplay = document.getElementById('url-display');
+      var openBtn = document.getElementById('open-feed-btn');
+      var countEl = document.getElementById('selected-count');
+
+      if (selected.length === 0) {
+        emptyEl.style.display = 'block';
+        contentEl.style.display = 'none';
+        countEl.textContent = '';
+        return;
+      }
+
+      emptyEl.style.display = 'none';
+      contentEl.style.display = 'block';
+
+      var slug = selected.map(function(c) { return encodeURIComponent(c); }).join('+');
+      var fullUrl = baseUrl + slug;
+
+      urlDisplay.innerHTML = baseUrl + '<span class="highlight">' + slug + '</span>';
+      openBtn.href = fullUrl;
+      countEl.textContent = selected.length + ' topic' + (selected.length > 1 ? 's' : '') + ' selected';
+    }
+
+    function copyUrl() {
+      var selected = getSelectedCategories();
+      var slug = selected.map(function(c) { return encodeURIComponent(c); }).join('+');
+      var fullUrl = baseUrl + slug;
+
+      navigator.clipboard.writeText(fullUrl).then(function() {
+        var btn = document.getElementById('copy-btn');
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(function() {
+          btn.textContent = 'Copy';
+          btn.classList.remove('copied');
+        }, 2000);
+      });
+    }
+
+    updatePreview();
+  </script>
+</body>
+</html>

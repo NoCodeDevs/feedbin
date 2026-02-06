@@ -47,6 +47,10 @@ every(1.day, "clockwork.daily", at: "7:00", tz: "UTC") do
   if RedisLock.acquire("clockwork:web_sub_maintenance")
     WebSub::Maintenance.perform_async
   end
+
+  if RedisLock.acquire("clockwork:cleanup_non_english")
+    CleanupNonEnglishEntriesJob.perform_async
+  end
 end
 
 every(1.week, "clockwork.weekly", at: "Sunday 16:00", tz: "UTC") do
