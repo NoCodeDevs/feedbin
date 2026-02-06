@@ -154,20 +154,33 @@ class SearchController < ApplicationController
 
   def analyze_topic
     query = params[:q].to_s.strip
-    return render json: { error: "No query" }, status: 400 if query.blank?
+    category = params[:category].to_s.strip
+
+    return render json: { error: "No query or category" }, status: 400 if query.blank? && category.blank?
 
     unless ENV['ANTHROPIC_API_KEY'] || ENV['OPENAI_API_KEY']
       return render json: { error: "AI features require an API key" }, status: 503
     end
 
-    # Get articles matching the topic (last 7 days)
-    entries = search_entries_scope(query, nil)
-                .where("published > ?", 7.days.ago)
-                .limit(30)
+    # Get articles matching the topic or category (last 7 days)
+    if query.present?
+      entries = search_entries_scope(query, nil)
+                  .where("published > ?", 7.days.ago)
+                  .limit(30)
+      topic_name = query
+    else
+      entries = Entry.includes(:feed)
+                     .where(with_complete_image)
+                     .where(category_filter_sql(category))
+                     .where("published > ?", 7.days.ago)
+                     .order(published: :desc)
+                     .limit(30)
+      topic_name = category
+    end
 
     if entries.size < 3
       return render json: {
-        topic: query,
+        topic: topic_name,
         article_count: entries.size,
         message: "Not enough articles for analysis",
         clusters: [],
@@ -198,7 +211,7 @@ class SearchController < ApplicationController
     end
 
     render json: {
-      topic: query,
+      topic: topic_name,
       article_count: entries.size,
       clusters: clusters,
       comparison: comparison
@@ -206,6 +219,10 @@ class SearchController < ApplicationController
   rescue => e
     Rails.logger.error "Analyze topic error: #{e.message}"
     render json: { error: "Analysis failed" }, status: 500
+  end
+
+  def analyze_category
+    analyze_topic
   end
 
   private

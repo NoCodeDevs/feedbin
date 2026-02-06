@@ -759,7 +759,6 @@
       <a href="/" class="logo">The Feed</a>
       <nav class="header-nav">
         <a href="/" class="header-nav-link active">Browse</a>
-        <a href="/stories" class="header-nav-link">Stories</a>
       </nav>
       <form action="/search/smart_feed" method="get" class="search-form" id="ask-form">
         <input type="text" name="prompt" class="search-input" id="ask-input" value="<%= @query %>" placeholder="Ask anything about your feed..." autofocus>
@@ -1019,6 +1018,61 @@
       div.textContent = text;
       return div.innerHTML;
     }
+
+    // Category Analysis Function
+    function analyzeCategory(event, encodedCategory) {
+      event.preventDefault();
+      var category = decodeURIComponent(encodedCategory);
+
+      var panel = document.getElementById('topic-analysis');
+      var loading = panel.querySelector('.analysis-loading');
+      var content = panel.querySelector('.analysis-content');
+
+      // Show panel with loading state
+      panel.style.display = 'block';
+      loading.style.display = 'flex';
+      content.innerHTML = '';
+
+      // Update URL
+      var newUrl = '/?category=' + encodedCategory;
+      window.history.pushState({}, '', newUrl);
+
+      // Mark the clicked category as active
+      document.querySelectorAll('.category-pill').forEach(function(pill) {
+        pill.classList.remove('active');
+        if (pill.dataset.category === category) {
+          pill.classList.add('active');
+        }
+      });
+
+      // Fetch analysis
+      fetch('/search/analyze_topic?category=' + encodedCategory)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          loading.style.display = 'none';
+          content.innerHTML = renderTopicAnalysis(data);
+        })
+        .catch(function(err) {
+          loading.style.display = 'none';
+          content.innerHTML = '<p class="analysis-empty">Analysis failed. Please try again.</p>';
+        });
+
+      // Also reload the page content with category results
+      loadCategoryResults(category);
+    }
+
+    function loadCategoryResults(category) {
+      var container = document.getElementById('entries-container');
+      var encodedCategory = encodeURIComponent(category);
+      fetch('/?category=' + encodedCategory + '&partial=1', { headers: { 'Accept': 'text/html' } })
+        .then(function(r) { return r.text(); })
+        .then(function(html) {
+          container.innerHTML = html;
+          // Update page header
+          var title = document.querySelector('.page-title');
+          if (title) title.textContent = category;
+        });
+    }
   </script>
 
   <div class="search-layout">
@@ -1036,9 +1090,9 @@
     </div>
 
     <nav class="categories">
-      <a href="/" class="category-pill">← All</a>
+      <a href="/" class="category-pill" onclick="closeAnalysis()">← All</a>
       <% %w[AI/ML Programming Security DevOps Web Gaming Business Science Design Culture News Tutorial].each do |cat| %>
-        <a href="/?category=<%= cat %>" class="category-pill <%= 'active' if @category == cat %>"><%= cat %></a>
+        <a href="#" class="category-pill <%= 'active' if @category == cat %>" data-category="<%= cat %>" onclick="analyzeCategory(event, '<%= CGI.escape(cat) %>')"><%= cat %></a>
       <% end %>
     </nav>
 
