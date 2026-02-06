@@ -566,6 +566,27 @@
       margin-bottom: 8px;
     }
 
+    .header-timing {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text-4);
+      margin-left: auto;
+      margin-right: 16px;
+    }
+    .header-timing .timing-label {
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-weight: 500;
+    }
+    .header-timing .timing-value {
+      color: var(--text-3);
+    }
+    .header-timing .timing-sep {
+      color: var(--border);
+    }
+
     .add-feed-btn {
       padding: 10px 16px;
       border-radius: 10px;
@@ -760,6 +781,15 @@
       <nav class="header-nav">
         <a href="/" class="header-nav-link active">Browse</a>
       </nav>
+      <% if @crawl_timing %>
+      <div class="header-timing">
+        <span class="timing-label">Updated</span>
+        <span class="timing-value"><%= @crawl_timing[:last_updated] ? time_ago_in_words(@crawl_timing[:last_updated]) : "—" %></span>
+        <span class="timing-sep">·</span>
+        <span class="timing-label">Next</span>
+        <span class="timing-value"><%= @crawl_timing[:next_update_in] > 60 ? "#{(@crawl_timing[:next_update_in] / 60).round}m" : "soon" %></span>
+      </div>
+      <% end %>
       <form action="/search/smart_feed" method="get" class="search-form" id="ask-form">
         <input type="text" name="prompt" class="search-input" id="ask-input" value="<%= @query %>" placeholder="Ask anything about your feed..." autofocus>
       </form>

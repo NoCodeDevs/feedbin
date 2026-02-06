@@ -1,16 +1,4 @@
 <aside class="trending-sidebar">
-  <% if @crawl_timing %>
-  <div class="crawl-timing">
-    <div class="timing-item">
-      <span class="timing-label">Updated</span>
-      <span class="timing-value"><%= @crawl_timing[:last_updated] ? time_ago_in_words(@crawl_timing[:last_updated]) + " ago" : "—" %></span>
-    </div>
-    <div class="timing-item">
-      <span class="timing-label">Next</span>
-      <span class="timing-value"><%= @crawl_timing[:next_update_in] > 60 ? "#{(@crawl_timing[:next_update_in] / 60).round} min" : "soon" %></span>
-    </div>
-  </div>
-  <% end %>
   <div class="trending-sidebar-title">Trending This Week</div>
   <nav class="trending-nav">
     <% if @trending_topics.present? %>
