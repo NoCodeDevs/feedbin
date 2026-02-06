@@ -2,7 +2,7 @@ class CustomFeedsController < ApplicationController
   skip_before_action :authorize
   skip_before_action :verify_authenticity_token
 
-  CATEGORIES = %w[AI/ML Programming Security DevOps Web Gaming Business Science Design Culture News Tutorial]
+  CATEGORIES = %w[AI/ML Programming Security DevOps Web Gaming Business Science Design Culture News Tutorial Startups Crypto Finance Health Productivity Opensource Apple Google Microsoft]
 
   CATEGORY_MAPPING = {
     "AI/ML" => ["ai", "artificial intelligence", "machinelearning", "deeplearning", "agentic ai", "claude"],
@@ -11,12 +11,21 @@ class CustomFeedsController < ApplicationController
     "DevOps" => ["devops", "docker", "kubernetes"],
     "Web" => ["webdev", "web", "javascript", "frontend", "react"],
     "Gaming" => ["games", "gaming", "videogames"],
-    "Business" => ["business", "startup", "biz & it", "product"],
+    "Business" => ["business", "biz & it", "product"],
     "Science" => ["science", "research"],
     "Design" => ["design", "ui", "ux"],
     "Culture" => ["culture", "entertainment", "funny"],
     "News" => ["news"],
-    "Tutorial" => ["tutorial", "howto"]
+    "Tutorial" => ["tutorial", "howto"],
+    "Startups" => ["startup", "startups", "founder", "vc", "venture"],
+    "Crypto" => ["crypto", "bitcoin", "ethereum", "blockchain", "web3"],
+    "Finance" => ["finance", "investing", "stocks", "markets"],
+    "Health" => ["health", "fitness", "wellness", "medical"],
+    "Productivity" => ["productivity", "tools", "workflow"],
+    "Opensource" => ["opensource", "open source", "oss", "github"],
+    "Apple" => ["apple", "iphone", "mac", "ios"],
+    "Google" => ["google", "android", "chrome"],
+    "Microsoft" => ["microsoft", "windows", "azure"]
   }
 
   PER_PAGE = 30
@@ -76,7 +85,8 @@ class CustomFeedsController < ApplicationController
   private
 
   def with_complete_image
-    "image->>'processed_url' IS NOT NULL AND image->>'processed_url' != '' AND image->>'original_url' IS NOT NULL AND image->>'width' IS NOT NULL AND image->>'height' IS NOT NULL"
+    # Temporarily relaxed - images aren't being processed yet
+    "1=1"
   end
 
   def category_filter_sql(category)

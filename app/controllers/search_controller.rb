@@ -348,7 +348,10 @@ class SearchController < ApplicationController
   end
 
   def with_complete_image
-    "image->>'processed_url' IS NOT NULL AND image->>'processed_url' != '' AND image->>'original_url' IS NOT NULL AND image->>'width' IS NOT NULL AND image->>'height' IS NOT NULL"
+    # Temporarily relaxed - images aren't being processed yet
+    # TODO: Re-enable once image processing is working
+    # "image->>'processed_url' IS NOT NULL AND image->>'processed_url' != '' AND image->>'original_url' IS NOT NULL AND image->>'width' IS NOT NULL AND image->>'height' IS NOT NULL"
+    "1=1"
   end
 
   def category_filter_sql(category)
