@@ -5,49 +5,49 @@
       <% @trending_topics.each do |topic| %>
         <% search_query = topic[:keywords]&.first || topic[:name] %>
         <a href="/?q=<%= CGI.escape(search_query) %>" class="trending-item <%= 'active' if @query == search_query %>">
-          <div class="trending-item-header">
-            <span class="trending-emoji"><%= topic[:emoji] %></span>
-            <span class="trending-name"><%= topic[:name] %></span>
-            <span class="trending-count"><%= topic[:total] %></span>
-          </div>
-          <div class="trending-sparkline">
-            <%
-              data = topic[:sparkline] || []
-              unless data.blank? || data.all?(&:zero?)
-                width = 80
-                height = 24
-                max_val = [data.max, 1].max
-                points = data.each_with_index.map do |val, i|
-                  x = (i.to_f / [data.size - 1, 1].max) * width
-                  y = height - ((val.to_f / max_val) * (height - 4)) - 2
-                  "#{x.round(1)},#{y.round(1)}"
-                end.join(" ")
-            %>
-            <svg width="<%= width %>" height="<%= height %>" viewBox="0 0 <%= width %> <%= height %>">
-              <polyline fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="<%= points %>"/>
-            </svg>
-            <% end %>
+          <span class="trending-emoji"><%= topic[:emoji] %></span>
+          <div class="trending-content">
+            <div class="trending-name"><%= topic[:name] %></div>
+            <div class="trending-meta">
+              <span class="trending-count"><%= topic[:total] %> articles</span>
+              <span class="trending-sparkline">
+                <%
+                  data = topic[:sparkline] || []
+                  unless data.blank? || data.all?(&:zero?)
+                    width = 50
+                    height = 14
+                    max_val = [data.max, 1].max
+                    points = data.each_with_index.map do |val, i|
+                      x = (i.to_f / [data.size - 1, 1].max) * width
+                      y = height - ((val.to_f / max_val) * (height - 2)) - 1
+                      "#{x.round(1)},#{y.round(1)}"
+                    end.join(" ")
+                %>
+                <svg viewBox="0 0 <%= width %> <%= height %>">
+                  <polyline fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" points="<%= points %>"/>
+                </svg>
+                <% end %>
+              </span>
+            </div>
           </div>
           <% if topic[:trend] == "rising" %>
-            <span class="trending-badge rising">Rising</span>
-          <% elsif topic[:trend] == "falling" %>
-            <span class="trending-badge falling">Cooling</span>
+            <span class="trending-badge rising">Hot</span>
           <% end %>
         </a>
       <% end %>
     <% else %>
-      <div class="trending-empty">
-        <p>Loading trends...</p>
-      </div>
+      <div class="trending-empty">Analyzing trends...</div>
     <% end %>
   </nav>
 
-  <div class="trending-sidebar-title" style="margin-top: 24px;">Sources</div>
+  <div class="trending-divider"></div>
+
+  <div class="trending-sidebar-title">Sources</div>
   <nav class="sources-nav">
     <a href="<%= @query.present? ? "/?q=#{CGI.escape(@query)}" : "/" %>" class="source-item <%= 'active' unless @feed_id %>">
       <span class="source-name">All Sources</span>
     </a>
-    <% @sources.first(12).each do |source| %>
+    <% @sources.first(10).each do |source| %>
       <a href="<%= @query.present? ? "/?q=#{CGI.escape(@query)}&feed_id=#{source.id}" : "/?feed_id=#{source.id}" %>" class="source-item <%= 'active' if @feed_id.to_s == source.id.to_s %>">
         <span class="source-name"><%= source.title %></span>
         <span class="source-count"><%= source.entries_count %></span>
