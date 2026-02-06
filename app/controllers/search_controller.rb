@@ -48,7 +48,7 @@ class SearchController < ApplicationController
       search_entries_scope(@query, @category)
     elsif @category.present?
       Entry.includes(:feed)
-           .where(category: @category)
+           .where("? = ANY(categories)", @category)
            .order(published: :desc)
     else
       Entry.includes(:feed)
@@ -193,7 +193,6 @@ class SearchController < ApplicationController
     since_time = since.is_a?(ActiveSupport::Duration) ? since.ago : since
     Feed.joins(:entries)
         .where("entries.published > ?", since_time)
-        .where.not("entries.image_url IS NULL OR entries.image_url = ''")
         .group("feeds.id", "feeds.title")
         .select("feeds.id, feeds.title, COUNT(entries.id) AS entries_count")
         .order("entries_count DESC")
