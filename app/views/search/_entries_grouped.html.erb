@@ -5,26 +5,29 @@
     <div class="grid">
       <% entries.each do |entry| %>
         <% plain_summary = ActionController::Base.helpers.strip_tags(entry.summary || entry.content || '').gsub(/\s+/, ' ').strip[0..120] %>
-        <a href="<%= entry.url %>" class="card" target="_blank" rel="noopener">
-          <% if entry.processed_image.present? %>
-            <div class="card-image">
-              <img src="<%= entry.processed_image %>" alt="" loading="lazy" onerror="this.closest('.card').style.display='none'">
-              <span class="badge"><%= entry.feed&.title&.split(/[.\s]/)&.first %></span>
-            </div>
-          <% end %>
-          <div class="card-body">
-            <% if entry.category.present? %>
-              <div class="card-category"><%= entry.category %></div>
+        <div class="card" data-entry-id="<%= entry.id %>" data-url="<%= entry.url %>">
+          <a href="<%= entry.url %>" class="card-link" target="_blank" rel="noopener">
+            <% if entry.processed_image.present? %>
+              <div class="card-image">
+                <img src="<%= entry.processed_image %>" alt="" loading="lazy" onerror="this.closest('.card').style.display='none'">
+                <span class="badge"><%= entry.feed&.title&.split(/[.\s]/)&.first %></span>
+              </div>
             <% end %>
-            <h3 class="card-title"><%= entry.title %></h3>
-            <% if plain_summary.present? %>
-              <p class="card-excerpt"><%= plain_summary %>...</p>
-            <% end %>
-            <div class="card-meta">
-              <%= time_ago_in_words(entry.published || entry.created_at) %> ago
+            <div class="card-body">
+              <% if entry.category.present? %>
+                <div class="card-category"><%= entry.category %></div>
+              <% end %>
+              <h3 class="card-title"><%= entry.title %></h3>
+              <% if plain_summary.present? %>
+                <p class="card-excerpt"><%= plain_summary %>...</p>
+              <% end %>
+              <div class="card-meta">
+                <%= time_ago_in_words(entry.published || entry.created_at) %> ago
+              </div>
             </div>
-          </div>
-        </a>
+          </a>
+          <button type="button" class="card-ai-btn" onclick="summarizeArticle(event, <%= entry.id %>)" title="AI Summary">AI</button>
+        </div>
       <% end %>
     </div>
   </section>

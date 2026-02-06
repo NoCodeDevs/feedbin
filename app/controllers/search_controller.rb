@@ -200,21 +200,16 @@ class SearchController < ApplicationController
       }
     end
 
-    # Run AI clustering and analysis
+    # Generate summary with key takeaways
     enhancer = AIEnhancer.new
-    clusters = enhancer.cluster_stories(articles)
-
-    # Get comparison for top cluster if exists
-    comparison = nil
-    if clusters.any? && clusters.first[:articles].size >= 2
-      comparison = enhancer.compare_coverage(clusters.first[:articles])
-    end
+    summary_result = enhancer.summarize_topic(topic_name, articles)
 
     render json: {
       topic: topic_name,
       article_count: entries.size,
-      clusters: clusters,
-      comparison: comparison
+      summary: summary_result[:summary],
+      takeaways: summary_result[:takeaways],
+      key_articles: summary_result[:key_articles]
     }
   rescue => e
     Rails.logger.error "Analyze topic error: #{e.message}"
@@ -223,6 +218,39 @@ class SearchController < ApplicationController
 
   def analyze_category
     analyze_topic
+  end
+
+  def summarize_article
+    entry_id = params[:id]
+    return render json: { error: "No article ID" }, status: 400 if entry_id.blank?
+
+    entry = Entry.includes(:feed).find_by(id: entry_id)
+    return render json: { error: "Article not found" }, status: 404 unless entry
+
+    unless ENV['ANTHROPIC_API_KEY'] || ENV['OPENAI_API_KEY']
+      return render json: { error: "AI features require an API key" }, status: 503
+    end
+
+    content = ActionController::Base.helpers.strip_tags(entry.content.to_s)[0..3000]
+    content = ActionController::Base.helpers.strip_tags(entry.summary.to_s)[0..1500] if content.blank?
+
+    enhancer = AIEnhancer.new
+    result = enhancer.analyze_article(entry.title, content)
+
+    if result
+      render json: {
+        id: entry.id,
+        title: entry.title,
+        tldr: result["tldr"],
+        insights: result["insights"],
+        reading_time: result["reading_minutes"]
+      }
+    else
+      render json: { error: "Could not analyze article" }, status: 500
+    end
+  rescue => e
+    Rails.logger.error "Summarize article error: #{e.message}"
+    render json: { error: "Analysis failed" }, status: 500
   end
 
   private

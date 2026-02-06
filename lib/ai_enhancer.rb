@@ -219,6 +219,51 @@ class AIEnhancer
     @provider == :anthropic ? "Claude" : "GPT-4"
   end
 
+  # Summarize a topic with key takeaways and linked articles
+  def summarize_topic(topic, articles)
+    return { summary: "", takeaways: [], key_articles: [] } if articles.empty?
+
+    articles_text = articles.first(15).map.with_index do |a, i|
+      "[#{i}] #{a[:title]} (#{a[:source]}): #{a[:summary].to_s[0..200]}"
+    end.join("\n")
+
+    prompt = <<~PROMPT
+      Based on these recent articles about "#{topic}", provide:
+      1. A concise 2-3 sentence summary of what's happening with this topic
+      2. 3-5 key takeaways (bullet points)
+      3. The 3 most important article indices to read
+
+      Articles:
+      #{articles_text}
+
+      Return ONLY valid JSON:
+      {
+        "summary": "2-3 sentence overview of what's happening",
+        "takeaways": ["Key point 1", "Key point 2", "Key point 3"],
+        "key_article_indices": [0, 1, 2]
+      }
+    PROMPT
+
+    result = chat(prompt, system: "You are a news analyst. Provide insightful summaries. Output valid JSON only, no markdown.")
+    json_match = result&.match(/\{.*\}/m)
+    return { summary: "", takeaways: [], key_articles: [] } unless json_match
+
+    data = JSON.parse(json_match[0])
+    key_indices = data["key_article_indices"] || []
+    key_articles = key_indices.map { |i| articles[i] }.compact.map do |a|
+      { id: a[:id], title: a[:title], source: a[:source], url: a[:url] }
+    end
+
+    {
+      summary: data["summary"] || "",
+      takeaways: data["takeaways"] || [],
+      key_articles: key_articles
+    }
+  rescue => e
+    Rails.logger.error "Summarize topic error: #{e.message}"
+    { summary: "", takeaways: [], key_articles: [] }
+  end
+
   # Cluster articles into story groups based on topic similarity
   def cluster_stories(articles, max_clusters: 10)
     return [] if articles.empty?

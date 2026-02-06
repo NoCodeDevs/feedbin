@@ -152,12 +152,12 @@
     }
 
     .card {
+      position: relative;
       display: flex;
       flex-direction: column;
       background: var(--surface);
       border-radius: 16px;
       overflow: hidden;
-      text-decoration: none;
       color: inherit;
       transition: transform 0.3s, box-shadow 0.3s;
       border: 1px solid var(--border);
@@ -166,6 +166,14 @@
     .card:hover {
       transform: translateY(-4px);
       box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+
+    .card-link {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      text-decoration: none;
+      color: inherit;
     }
 
     .card-image {
@@ -565,6 +573,169 @@
       margin-right: 8px;
       margin-bottom: 8px;
     }
+    .takeaways-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .takeaways-list li {
+      position: relative;
+      padding-left: 20px;
+      margin-bottom: 10px;
+      font-size: 14px;
+      color: var(--text-2);
+      line-height: 1.5;
+    }
+    .takeaways-list li::before {
+      content: "→";
+      position: absolute;
+      left: 0;
+      color: var(--accent-2);
+    }
+    .key-articles {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .key-article-link {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 10px 12px;
+      background: var(--surface-2);
+      border-radius: 8px;
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+    .key-article-link:hover { background: var(--surface-3); }
+    .key-article-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.4;
+    }
+    .key-article-source {
+      font-size: 11px;
+      color: var(--accent-2);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .analysis-meta {
+      margin-top: 16px;
+      font-size: 12px;
+      color: var(--text-4);
+    }
+    /* AI Button on Cards */
+    .card-ai-btn {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      width: 32px;
+      height: 32px;
+      background: rgba(124, 58, 237, 0.9);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.15s;
+    }
+    .card:hover .card-ai-btn { opacity: 1; }
+    .card-ai-btn:hover { background: var(--accent-2); }
+    /* Article Summary Modal */
+    .article-summary-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 300;
+      align-items: center;
+      justify-content: center;
+    }
+    .article-summary-modal.open { display: flex; }
+    .article-summary-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .article-summary-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .article-summary-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: bold;
+      color: white;
+      flex-shrink: 0;
+    }
+    .article-summary-title {
+      flex: 1;
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+    .article-summary-close {
+      background: none;
+      border: none;
+      color: var(--text-4);
+      cursor: pointer;
+      font-size: 20px;
+      padding: 0;
+    }
+    .article-summary-tldr {
+      font-size: 15px;
+      color: var(--text-2);
+      line-height: 1.6;
+      margin-bottom: 16px;
+      padding: 12px;
+      background: rgba(124, 58, 237, 0.1);
+      border-radius: 8px;
+    }
+    .article-summary-insights h4 {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-4);
+      margin-bottom: 10px;
+    }
+    .article-summary-insights ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .article-summary-insights li {
+      position: relative;
+      padding-left: 16px;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: var(--text-3);
+    }
+    .article-summary-insights li::before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: var(--accent-2);
+    }
 
     .header-timing {
       display: flex;
@@ -800,7 +971,7 @@
   <div class="modal-overlay" id="add-feed-modal">
     <div class="modal-box">
       <h3>Add a feed</h3>
-      <p style="font-size: 14px; color: var(--text-3); margin-bottom: 14px;">Enter the feed URL (RSS or Atom). We’ll validate it before adding.</p>
+      <p style="font-size: 14px; color: var(--text-3); margin-bottom: 14px;">Enter the feed URL (RSS or Atom). We'll validate it before adding.</p>
       <form id="add-feed-form">
         <input type="url" name="url" id="add-feed-url" placeholder="https://example.com/feed.xml" required>
         <div class="form-actions">
@@ -809,6 +980,22 @@
         </div>
         <div class="feed-request-message" id="add-feed-message"></div>
       </form>
+    </div>
+  </div>
+
+  <div class="article-summary-modal" id="article-summary-modal">
+    <div class="article-summary-box">
+      <div class="article-summary-header">
+        <div class="article-summary-icon">AI</div>
+        <h3 class="article-summary-title" id="summary-title">Loading...</h3>
+        <button type="button" class="article-summary-close" onclick="closeSummaryModal()">&times;</button>
+      </div>
+      <div id="summary-content">
+        <div class="analysis-loading" style="justify-content: center;">
+          <div class="spinner"></div>
+          <span>Analyzing article...</span>
+        </div>
+      </div>
     </div>
   </div>
   <script>
@@ -963,52 +1150,38 @@
       }
 
       if (data.message) {
-        return '<div class="analysis-header"><div class="analysis-icon">AI</div><span class="analysis-title">Topic Analysis</span><button class="analysis-close" onclick="closeAnalysis()">&times;</button></div><p class="analysis-empty">' + data.message + ' (' + data.article_count + ' articles found)</p>';
+        return '<div class="analysis-header"><div class="analysis-icon">AI</div><span class="analysis-title">Topic Summary</span><button class="analysis-close" onclick="closeAnalysis()">&times;</button></div><p class="analysis-empty">' + data.message + ' (' + data.article_count + ' articles found)</p>';
       }
 
-      var html = '<div class="analysis-header"><div class="analysis-icon">AI</div><span class="analysis-title">Topic Analysis: ' + escapeHtml(data.topic) + '</span><button class="analysis-close" onclick="closeAnalysis()">&times;</button></div>';
+      var html = '<div class="analysis-header"><div class="analysis-icon">AI</div><span class="analysis-title">' + escapeHtml(data.topic) + ' — Summary</span><button class="analysis-close" onclick="closeAnalysis()">&times;</button></div>';
 
-      // Show clusters as badges
-      if (data.clusters && data.clusters.length > 0) {
-        html += '<div class="analysis-clusters">';
-        data.clusters.forEach(function(cluster) {
-          html += '<span class="cluster-badge">' + escapeHtml(cluster.headline || cluster.topic) + ' (' + (cluster.articles ? cluster.articles.length : 0) + ')</span>';
+      // Summary
+      if (data.summary) {
+        html += '<p class="analysis-summary">' + escapeHtml(data.summary) + '</p>';
+      }
+
+      // Key Takeaways
+      if (data.takeaways && data.takeaways.length > 0) {
+        html += '<div class="analysis-section"><div class="analysis-section-title">Key Takeaways</div><ul class="takeaways-list">';
+        data.takeaways.forEach(function(takeaway) {
+          html += '<li>' + escapeHtml(takeaway) + '</li>';
         });
-        html += '</div>';
+        html += '</ul></div>';
       }
 
-      // Show comparison if available
-      if (data.comparison) {
-        if (data.comparison.summary) {
-          html += '<p class="analysis-summary">' + escapeHtml(data.comparison.summary) + '</p>';
-        }
-
-        // Perspectives
-        if (data.comparison.perspectives && data.comparison.perspectives.length > 0) {
-          html += '<div class="analysis-perspectives">';
-          data.comparison.perspectives.forEach(function(p) {
-            var toneClass = 'tone-' + (p.tone || 'neutral');
-            html += '<div class="perspective-card">';
-            html += '<div class="perspective-source">' + escapeHtml(p.source) + '</div>';
-            html += '<p class="perspective-angle">' + escapeHtml(p.angle) + '</p>';
-            html += '<span class="perspective-tone ' + toneClass + '">' + escapeHtml(p.tone || 'neutral') + '</span>';
-            html += '</div>';
-          });
-          html += '</div>';
-        }
-
-        // Key differences
-        if (data.comparison.key_differences) {
-          html += '<div class="analysis-section"><div class="analysis-section-title">Key Differences</div><p class="analysis-section-text">' + escapeHtml(data.comparison.key_differences) + '</p></div>';
-        }
-
-        // Consensus
-        if (data.comparison.consensus) {
-          html += '<div class="analysis-section"><div class="analysis-section-title">What Sources Agree On</div><p class="analysis-section-text">' + escapeHtml(data.comparison.consensus) + '</p></div>';
-        }
-      } else {
-        html += '<p class="analysis-empty">Found ' + data.article_count + ' articles about this topic.</p>';
+      // Key Articles to Read
+      if (data.key_articles && data.key_articles.length > 0) {
+        html += '<div class="analysis-section"><div class="analysis-section-title">Key Articles</div><div class="key-articles">';
+        data.key_articles.forEach(function(article) {
+          html += '<a href="' + escapeHtml(article.url) + '" target="_blank" class="key-article-link">';
+          html += '<span class="key-article-title">' + escapeHtml(article.title) + '</span>';
+          html += '<span class="key-article-source">' + escapeHtml(article.source) + '</span>';
+          html += '</a>';
+        });
+        html += '</div></div>';
       }
+
+      html += '<p class="analysis-meta">Based on ' + data.article_count + ' articles</p>';
 
       return html;
     }
@@ -1024,6 +1197,64 @@
       div.textContent = text;
       return div.innerHTML;
     }
+
+    // Article Summary Function
+    function summarizeArticle(event, entryId) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      var modal = document.getElementById('article-summary-modal');
+      var titleEl = document.getElementById('summary-title');
+      var contentEl = document.getElementById('summary-content');
+
+      // Show modal with loading state
+      modal.classList.add('open');
+      titleEl.textContent = 'Loading...';
+      contentEl.innerHTML = '<div class="analysis-loading" style="justify-content: center;"><div class="spinner"></div><span>Analyzing article...</span></div>';
+
+      fetch('/search/summarize_article/' + entryId)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.error) {
+            contentEl.innerHTML = '<p class="analysis-empty">' + escapeHtml(data.error) + '</p>';
+            return;
+          }
+
+          titleEl.textContent = data.title;
+
+          var html = '';
+          if (data.tldr) {
+            html += '<div class="article-summary-tldr">' + escapeHtml(data.tldr) + '</div>';
+          }
+
+          if (data.insights && data.insights.length > 0) {
+            html += '<div class="article-summary-insights"><h4>Key Insights</h4><ul>';
+            data.insights.forEach(function(insight) {
+              html += '<li>' + escapeHtml(insight) + '</li>';
+            });
+            html += '</ul></div>';
+          }
+
+          if (data.reading_time) {
+            html += '<p class="analysis-meta">' + data.reading_time + ' min read</p>';
+          }
+
+          contentEl.innerHTML = html;
+        })
+        .catch(function(err) {
+          contentEl.innerHTML = '<p class="analysis-empty">Failed to analyze article.</p>';
+        });
+    }
+
+    function closeSummaryModal() {
+      var modal = document.getElementById('article-summary-modal');
+      modal.classList.remove('open');
+    }
+
+    // Close modal on overlay click
+    document.getElementById('article-summary-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeSummaryModal();
+    });
 
     // Category Analysis Function
     function analyzeCategory(event, encodedCategory) {
