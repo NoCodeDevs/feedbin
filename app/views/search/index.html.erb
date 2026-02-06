@@ -1037,7 +1037,7 @@
 
     <nav class="categories">
       <a href="/" class="category-pill">← All</a>
-      <% %w[Tech News Gaming Business Design Culture Science AI/ML Programming Photography].each do |cat| %>
+      <% %w[AI/ML Programming Security DevOps Web Gaming Business Science Design Culture News Tutorial].each do |cat| %>
         <a href="/?category=<%= cat %>" class="category-pill <%= 'active' if @category == cat %>"><%= cat %></a>
       <% end %>
     </nav>

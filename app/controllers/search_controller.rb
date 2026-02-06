@@ -5,7 +5,23 @@ class SearchController < ApplicationController
   skip_before_action :authorize
   skip_before_action :verify_authenticity_token
 
-  CATEGORIES = %w[AI/ML Programming Security DevOps Web Mobile Data Business Science Design Culture News Tutorial Opinion]
+  CATEGORIES = %w[AI/ML Programming Security DevOps Web Gaming Business Science Design Culture News Tutorial]
+
+  # Map UI category names to database category names (lowercase)
+  CATEGORY_MAPPING = {
+    "AI/ML" => ["ai", "artificial intelligence", "machinelearning", "deeplearning", "agentic ai", "claude"],
+    "Programming" => ["programming", "software", "coding", "python", "rust", "go"],
+    "Security" => ["security", "cybersecurity"],
+    "DevOps" => ["devops", "docker", "kubernetes"],
+    "Web" => ["webdev", "web", "javascript", "frontend", "react"],
+    "Gaming" => ["games", "gaming", "videogames"],
+    "Business" => ["business", "startup", "biz & it", "product"],
+    "Science" => ["science", "research"],
+    "Design" => ["design", "ui", "ux"],
+    "Culture" => ["culture", "entertainment", "funny"],
+    "News" => ["news"],
+    "Tutorial" => ["tutorial", "howto"]
+  }
 
   def smart_feed
     begin
@@ -51,7 +67,7 @@ class SearchController < ApplicationController
     elsif @category.present?
       Entry.includes(:feed)
            .where(with_complete_image)
-           .where("categories @> ?", [@category].to_json)
+           .where(category_filter_sql(@category))
            .order(published: :desc)
     else
       Entry.includes(:feed)
@@ -197,14 +213,14 @@ class SearchController < ApplicationController
   def search_entries_scope(query, category = nil)
     sanitized = query.gsub(/[^\w\s]/, ' ').split.map { |w| "#{w}:*" }.join(' & ')
     scope = Entry.includes(:feed).where("image->>'processed_url' IS NOT NULL AND image->>'original_url' IS NOT NULL AND image->>'width' IS NOT NULL AND image->>'height' IS NOT NULL")
-    scope = scope.where("categories @> ?", [category].to_json) if category.present?
+    scope = scope.where(category_filter_sql(category)) if category.present?
     scope.where(
       "to_tsvector('english', coalesce(title, '') || ' ' || coalesce(summary, '')) @@ to_tsquery('english', ?)",
       sanitized
     ).order(published: :desc)
   rescue
     scope = Entry.includes(:feed).where("image->>'processed_url' IS NOT NULL AND image->>'original_url' IS NOT NULL AND image->>'width' IS NOT NULL AND image->>'height' IS NOT NULL")
-    scope = scope.where("categories @> ?", [category].to_json) if category.present?
+    scope = scope.where(category_filter_sql(category)) if category.present?
     scope.where("title ILIKE ? OR summary ILIKE ?", "%#{query}%", "%#{query}%").order(published: :desc)
   end
 
@@ -223,18 +239,17 @@ class SearchController < ApplicationController
       end
     end
 
+    scope = Entry.includes(:feed)
+         .where("image->>'processed_url' IS NOT NULL AND image->>'original_url' IS NOT NULL AND image->>'width' IS NOT NULL AND image->>'height' IS NOT NULL")
+
     if terms[:category].present? && CATEGORIES.include?(terms[:category])
-      conditions << "categories @> ?"
-      values << [terms[:category]].to_json
+      scope = scope.where(category_filter_sql(terms[:category]))
     end
 
-    return Entry.none if conditions.empty?
+    return Entry.none if conditions.empty? && terms[:category].blank?
 
-    Entry.includes(:feed)
-         .where("image->>'processed_url' IS NOT NULL AND image->>'original_url' IS NOT NULL AND image->>'width' IS NOT NULL AND image->>'height' IS NOT NULL")
-         .where(conditions.join(' AND '), *values)
-         .order(published: :desc)
-         .limit(30)
+    scope = scope.where(conditions.join(' AND '), *values) if conditions.any?
+    scope.order(published: :desc).limit(30)
   end
 
   def ai_understand_query(query)
@@ -273,6 +288,16 @@ class SearchController < ApplicationController
 
   def with_complete_image
     "image->>'processed_url' IS NOT NULL AND image->>'processed_url' != '' AND image->>'original_url' IS NOT NULL AND image->>'width' IS NOT NULL AND image->>'height' IS NOT NULL"
+  end
+
+  def category_filter_sql(category)
+    db_categories = CATEGORY_MAPPING[category] || [category.downcase]
+    # Build SQL that checks if any of the mapped categories exist in the JSONB array (case-insensitive)
+    conditions = db_categories.map do |cat|
+      quoted = ActiveRecord::Base.connection.quote(cat.downcase)
+      "EXISTS (SELECT 1 FROM jsonb_array_elements_text(categories) elem WHERE LOWER(elem) = #{quoted})"
+    end
+    conditions.join(" OR ")
   end
 
   def entry_json(entry)
