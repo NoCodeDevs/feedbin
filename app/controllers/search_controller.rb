@@ -48,7 +48,7 @@ class SearchController < ApplicationController
       search_entries_scope(@query, @category)
     elsif @category.present?
       Entry.includes(:feed)
-           .where("? = ANY(categories)", @category)
+           .where("categories @> ?", [@category].to_json)
            .order(published: :desc)
     else
       Entry.includes(:feed)
@@ -91,14 +91,14 @@ class SearchController < ApplicationController
   def search_entries_scope(query, category = nil)
     sanitized = query.gsub(/[^\w\s]/, ' ').split.map { |w| "#{w}:*" }.join(' & ')
     scope = Entry.includes(:feed).where.not(image_url: [nil, ''])
-    scope = scope.where(category: category) if category.present?
+    scope = scope.where("categories @> ?", [category].to_json) if category.present?
     scope.where(
       "to_tsvector('english', coalesce(title, '') || ' ' || coalesce(summary, '')) @@ to_tsquery('english', ?)",
       sanitized
     ).order(published: :desc)
   rescue
     scope = Entry.includes(:feed).where.not(image_url: [nil, ''])
-    scope = scope.where(category: category) if category.present?
+    scope = scope.where("categories @> ?", [category].to_json) if category.present?
     scope.where("title ILIKE ? OR summary ILIKE ?", "%#{query}%", "%#{query}%").order(published: :desc)
   end
 
@@ -118,8 +118,8 @@ class SearchController < ApplicationController
     end
 
     if terms[:category].present? && CATEGORIES.include?(terms[:category])
-      conditions << "category = ?"
-      values << terms[:category]
+      conditions << "categories @> ?"
+      values << [terms[:category]].to_json
     end
 
     return Entry.none if conditions.empty?
