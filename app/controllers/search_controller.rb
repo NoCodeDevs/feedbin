@@ -1,5 +1,5 @@
-require "openai"
 require_relative "../../lib/one_feed/promptable_feed"
+require_relative "../../lib/ai_enhancer"
 
 class SearchController < ApplicationController
   skip_before_action :authorize
@@ -132,34 +132,23 @@ class SearchController < ApplicationController
   end
 
   def ai_understand_query(query)
-    return { keywords: query.split, interpretation: query } unless ENV['OPENAI_API_KEY']
+    return { keywords: query.split, interpretation: query } unless ENV['ANTHROPIC_API_KEY'] || ENV['OPENAI_API_KEY']
 
     begin
-      client = OpenAI::Client.new(access_token: ENV['OPENAI_API_KEY'])
-      
-      response = client.chat(
-        parameters: {
-          model: "gpt-4o-mini",
-          messages: [{
-            role: "user",
-            content: <<~PROMPT
-              Parse this search query for a tech/programming blog feed:
-              "#{query}"
-              
-              Extract:
-              1. Key search terms (technical terms, names, concepts)
-              2. Category if mentioned (one of: #{CATEGORIES.join(', ')})
-              3. A plain interpretation of what the user wants
-              
-              Return JSON: {"keywords": ["term1", "term2"], "category": "Category or null", "interpretation": "Looking for..."}
-            PROMPT
-          }],
-          temperature: 0.2,
-          max_tokens: 150
-        }
-      )
+      enhancer = AIEnhancer.new
+      prompt = <<~PROMPT
+        Parse this search query for a tech/programming blog feed:
+        "#{query}"
 
-      result = response.dig("choices", 0, "message", "content")
+        Extract:
+        1. Key search terms (technical terms, names, concepts)
+        2. Category if mentioned (one of: #{CATEGORIES.join(', ')})
+        3. A plain interpretation of what the user wants
+
+        Return ONLY valid JSON: {"keywords": ["term1", "term2"], "category": "Category or null", "interpretation": "Looking for..."}
+      PROMPT
+
+      result = enhancer.chat(prompt, system: "You are a JSON-only responder. Output valid JSON with no markdown formatting.")
       json_match = result.match(/\{.*\}/m)
       if json_match
         parsed = JSON.parse(json_match[0])

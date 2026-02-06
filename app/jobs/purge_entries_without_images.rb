@@ -1,9 +1,10 @@
-namespace :feedbin do
-  desc "Purge entries that have no processed image and their dependent records"
-  task purge_entries_without_images: :environment do
+class PurgeEntriesWithoutImages
+  include Sidekiq::Worker
+  sidekiq_options queue: :default, retry: false
+
+  def perform
     # Find entries without a processed image (image column is null or missing required keys)
     # Only purge entries older than 1 hour to give image crawler time to process
-    # Check that image JSON has required fields: original_url, width, height, processed_url
     scope = Entry.where("created_at < ?", 1.hour.ago)
                  .where(<<~SQL)
                    image IS NULL
@@ -14,16 +15,11 @@ namespace :feedbin do
                  SQL
 
     ids = scope.pluck(:id)
-    total = ids.size
-    puts "Found #{total} entries without processed images to purge."
+    return if ids.empty?
 
-    if total.zero?
-      puts "Nothing to do."
-      next
-    end
+    Sidekiq.logger.info "PurgeEntriesWithoutImages: found #{ids.size} entries to purge"
 
-    # Delete dependent records first, then entries (in batches if large)
-    ids.each_slice(1000) do |batch_ids|
+    ids.each_slice(500) do |batch_ids|
       UnreadEntry.where(entry_id: batch_ids).delete_all
       StarredEntry.where(entry_id: batch_ids).delete_all
       UpdatedEntry.where(entry_id: batch_ids).delete_all rescue nil
@@ -33,6 +29,6 @@ namespace :feedbin do
       Entry.where(id: batch_ids).delete_all
     end
 
-    puts "Done. Purged #{total} entries without processed images."
+    Sidekiq.logger.info "PurgeEntriesWithoutImages: purged #{ids.size} entries"
   end
 end

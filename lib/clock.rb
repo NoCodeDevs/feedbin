@@ -29,6 +29,12 @@ every(1.minutes, "clockwork.frequent") do
   end
 end
 
+every(1.hour, "clockwork.hourly") do
+  if RedisLock.acquire("clockwork:purge_entries_without_images")
+    PurgeEntriesWithoutImages.perform_async
+  end
+end
+
 every(1.day, "clockwork.daily", at: "7:00", tz: "UTC") do
   if RedisLock.acquire("clockwork:delete_entries:v2")
     EntryDeleterScheduler.perform_async
