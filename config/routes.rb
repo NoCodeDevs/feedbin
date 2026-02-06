@@ -9,6 +9,9 @@ Rails.application.routes.draw do
   get "search/smart_feed", to: "search#smart_feed"
   post "search/ask", to: "search#ask"
 
+  get "stories", to: "stories#index"
+  get "stories/compare", to: "stories#compare"
+
   post "feed_requests", to: "feed_requests#create"
   
   # AI features

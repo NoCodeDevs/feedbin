@@ -180,4 +180,93 @@ class AIEnhancer
   def provider_name
     @provider == :anthropic ? "Claude" : "GPT-4"
   end
+
+  # Cluster articles into story groups based on topic similarity
+  def cluster_stories(articles, max_clusters: 10)
+    return [] if articles.empty?
+
+    titles = articles.map.with_index { |a, i| "[#{i}] #{a[:title]} (#{a[:source]})" }.join("\n")
+
+    prompt = <<~PROMPT
+      These are recent news articles. Group them into story clusters - articles covering the same news story or topic.
+
+      Articles:
+      #{titles}
+
+      Return ONLY valid JSON with this structure:
+      {
+        "clusters": [
+          {
+            "headline": "Main story headline (your summary)",
+            "article_indices": [0, 3, 7],
+            "topic": "Brief topic description"
+          }
+        ]
+      }
+
+      Rules:
+      - Only group articles that are clearly about the SAME specific story/event
+      - Single articles with no matches should NOT be included
+      - Maximum #{max_clusters} clusters
+      - Use the [number] as the index
+    PROMPT
+
+    result = chat(prompt, system: "You are a JSON-only responder. Output valid JSON with no markdown.")
+    json_match = result&.match(/\{.*\}/m)
+    return [] unless json_match
+
+    data = JSON.parse(json_match[0])
+    clusters = data["clusters"] || []
+
+    # Map indices back to articles
+    clusters.map do |cluster|
+      indices = cluster["article_indices"].to_a.map(&:to_i)
+      cluster_articles = indices.map { |i| articles[i] }.compact
+      next if cluster_articles.size < 2
+
+      {
+        headline: cluster["headline"],
+        topic: cluster["topic"],
+        articles: cluster_articles
+      }
+    end.compact
+  rescue => e
+    Rails.logger.error "Story clustering error: #{e.message}"
+    []
+  end
+
+  # Compare how different sources cover the same story
+  def compare_coverage(articles)
+    return nil if articles.size < 2
+
+    context = articles.map do |a|
+      summary = a[:summary].to_s.gsub(/<[^>]+>/, ' ').gsub(/\s+/, ' ').strip[0..500]
+      "Source: #{a[:source]}\nTitle: #{a[:title]}\nSummary: #{summary}"
+    end.join("\n\n---\n\n")
+
+    prompt = <<~PROMPT
+      These articles cover the same story from different sources. Analyze the coverage:
+
+      #{context}
+
+      Return ONLY valid JSON:
+      {
+        "summary": "2-3 sentence neutral summary of what happened",
+        "perspectives": [
+          {"source": "Source Name", "angle": "Their focus/angle in 1 sentence", "tone": "neutral/positive/negative/critical"}
+        ],
+        "key_differences": "What do sources emphasize differently?",
+        "consensus": "What do all sources agree on?"
+      }
+    PROMPT
+
+    result = chat(prompt, system: "You are a media analyst. Be objective and insightful. Output valid JSON only.")
+    json_match = result&.match(/\{.*\}/m)
+    return nil unless json_match
+
+    JSON.parse(json_match[0])
+  rescue => e
+    Rails.logger.error "Coverage comparison error: #{e.message}"
+    nil
+  end
 end

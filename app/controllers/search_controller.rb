@@ -48,10 +48,12 @@ class SearchController < ApplicationController
       search_entries_scope(@query, @category)
     elsif @category.present?
       Entry.includes(:feed)
+           .where(with_complete_image)
            .where("categories @> ?", [@category].to_json)
            .order(published: :desc)
     else
       Entry.includes(:feed)
+           .where(with_complete_image)
            .order(published: :desc)
     end
     scope = scope.where(feed_id: @feed_id) if @feed_id.present?
@@ -211,6 +213,10 @@ class SearchController < ApplicationController
     { keywords: query.split, interpretation: query }
   end
 
+  def with_complete_image
+    "image->>'processed_url' IS NOT NULL AND image->>'processed_url' != '' AND image->>'original_url' IS NOT NULL AND image->>'width' IS NOT NULL AND image->>'height' IS NOT NULL"
+  end
+
   def entry_json(entry)
     {
       id: entry.id,
@@ -228,6 +234,7 @@ class SearchController < ApplicationController
     since_time = since.is_a?(ActiveSupport::Duration) ? since.ago : since
     Feed.joins(:entries)
         .where("entries.published > ?", since_time)
+        .where("entries.image->>'processed_url' IS NOT NULL AND entries.image->>'processed_url' != ''")
         .group("feeds.id", "feeds.title")
         .select("feeds.id, feeds.title, COUNT(entries.id) AS entries_count")
         .order("entries_count DESC")

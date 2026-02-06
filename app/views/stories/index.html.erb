@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Story Clusters - The Feed</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #000000;
+      --surface: #0a0a0a;
+      --surface-2: #141414;
+      --surface-3: #1a1a1a;
+      --text: #ffffff;
+      --text-2: #e5e5e5;
+      --text-3: #a3a3a3;
+      --text-4: #737373;
+      --accent: #7c3aed;
+      --accent-2: #8b5cf6;
+      --border: #262626;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .logo {
+      font-family: 'Newsreader', serif;
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 8px;
+    }
+
+    .nav-link {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-3);
+      text-decoration: none;
+      transition: all 0.15s;
+    }
+
+    .nav-link:hover { color: var(--text); background: var(--surface-2); }
+    .nav-link.active { color: var(--accent-2); background: rgba(124, 58, 237, 0.15); }
+
+    .main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 32px;
+    }
+
+    .page-header {
+      margin-bottom: 40px;
+    }
+
+    .page-title {
+      font-family: 'Newsreader', serif;
+      font-size: 36px;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+
+    .page-subtitle {
+      font-size: 16px;
+      color: var(--text-3);
+    }
+
+    .clusters-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    .cluster-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .cluster-header {
+      padding: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cluster-headline {
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+
+    .cluster-topic {
+      font-size: 14px;
+      color: var(--text-3);
+    }
+
+    .cluster-sources {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .source-badge {
+      padding: 4px 10px;
+      background: var(--surface-2);
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-3);
+    }
+
+    .cluster-articles {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1px;
+      background: var(--border);
+    }
+
+    .cluster-article {
+      display: flex;
+      gap: 16px;
+      padding: 20px;
+      background: var(--surface);
+      text-decoration: none;
+      color: inherit;
+      transition: background 0.15s;
+    }
+
+    .cluster-article:hover { background: var(--surface-2); }
+
+    .cluster-article-image {
+      width: 100px;
+      height: 70px;
+      border-radius: 8px;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: var(--surface-2);
+    }
+
+    .cluster-article-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .cluster-article-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .cluster-article-source {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent-2);
+      margin-bottom: 4px;
+    }
+
+    .cluster-article-title {
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .compare-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 16px 24px 24px;
+      padding: 12px 20px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      text-decoration: none;
+    }
+
+    .compare-btn:hover { background: var(--accent-2); }
+
+    .comparison-panel {
+      margin: 0 24px 24px;
+      padding: 24px;
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%);
+      border: 1px solid rgba(124, 58, 237, 0.3);
+      border-radius: 16px;
+    }
+
+    .comparison-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .comparison-icon {
+      width: 28px;
+      height: 28px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .comparison-label {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent-2);
+    }
+
+    .comparison-summary {
+      font-size: 16px;
+      line-height: 1.7;
+      color: var(--text-2);
+      margin-bottom: 24px;
+    }
+
+    .perspectives-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .perspective-card {
+      padding: 16px;
+      background: var(--surface-2);
+      border-radius: 12px;
+    }
+
+    .perspective-source {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .perspective-angle {
+      font-size: 14px;
+      color: var(--text-3);
+      line-height: 1.5;
+    }
+
+    .perspective-tone {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .tone-neutral { background: var(--surface-3); color: var(--text-3); }
+    .tone-positive { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+    .tone-negative { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+    .tone-critical { background: rgba(249, 115, 22, 0.2); color: #f97316; }
+
+    .comparison-section {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(124, 58, 237, 0.2);
+    }
+
+    .comparison-section-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-4);
+      margin-bottom: 8px;
+    }
+
+    .comparison-section-text {
+      font-size: 14px;
+      color: var(--text-2);
+      line-height: 1.6;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 80px 20px;
+    }
+
+    .empty-state h2 {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .empty-state p {
+      color: var(--text-3);
+    }
+
+    @media (max-width: 768px) {
+      .header-inner { padding: 12px 16px; }
+      .main { padding: 24px 16px; }
+      .page-title { font-size: 28px; }
+      .cluster-articles { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <a href="/" class="logo">The Feed</a>
+      <nav class="nav-links">
+        <a href="/" class="nav-link">Browse</a>
+        <a href="/stories" class="nav-link active">Stories</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="page-header">
+      <h1 class="page-title">Story Clusters</h1>
+      <p class="page-subtitle">Same story, different perspectives. See how multiple sources cover the same news.</p>
+    </div>
+
+    <% if @clusters.any? %>
+      <div class="clusters-grid">
+        <% @clusters.each_with_index do |cluster, index| %>
+          <div class="cluster-card">
+            <div class="cluster-header">
+              <h2 class="cluster-headline"><%= cluster[:headline] %></h2>
+              <p class="cluster-topic"><%= cluster[:topic] %></p>
+              <div class="cluster-sources">
+                <% cluster[:articles].map { |a| a[:source] }.uniq.each do |source| %>
+                  <span class="source-badge"><%= source %></span>
+                <% end %>
+              </div>
+            </div>
+
+            <div class="cluster-articles">
+              <% cluster[:articles].each do |article| %>
+                <a href="<%= article[:url] %>" class="cluster-article" target="_blank" rel="noopener">
+                  <% if article[:image].present? %>
+                    <div class="cluster-article-image">
+                      <img src="<%= article[:image] %>" alt="" loading="lazy">
+                    </div>
+                  <% end %>
+                  <div class="cluster-article-content">
+                    <div class="cluster-article-source"><%= article[:source] %></div>
+                    <h3 class="cluster-article-title"><%= article[:title] %></h3>
+                  </div>
+                </a>
+              <% end %>
+            </div>
+
+            <% if @selected_cluster_index == index && @comparison %>
+              <div class="comparison-panel">
+                <div class="comparison-header">
+                  <div class="comparison-icon">AI</div>
+                  <span class="comparison-label">Source Intelligence</span>
+                </div>
+
+                <p class="comparison-summary"><%= @comparison["summary"] %></p>
+
+                <div class="perspectives-grid">
+                  <% (@comparison["perspectives"] || []).each do |perspective| %>
+                    <div class="perspective-card">
+                      <div class="perspective-source"><%= perspective["source"] %></div>
+                      <p class="perspective-angle"><%= perspective["angle"] %></p>
+                      <span class="perspective-tone tone-<%= perspective["tone"] || 'neutral' %>"><%= perspective["tone"] || "neutral" %></span>
+                    </div>
+                  <% end %>
+                </div>
+
+                <% if @comparison["key_differences"].present? %>
+                  <div class="comparison-section">
+                    <div class="comparison-section-title">Key Differences</div>
+                    <p class="comparison-section-text"><%= @comparison["key_differences"] %></p>
+                  </div>
+                <% end %>
+
+                <% if @comparison["consensus"].present? %>
+                  <div class="comparison-section">
+                    <div class="comparison-section-title">What Sources Agree On</div>
+                    <p class="comparison-section-text"><%= @comparison["consensus"] %></p>
+                  </div>
+                <% end %>
+              </div>
+            <% else %>
+              <a href="/stories?cluster=<%= index %>" class="compare-btn">
+                <span>Compare Coverage</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+              </a>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="empty-state">
+        <h2>No Story Clusters Found</h2>
+        <p>Check back later when more sources cover the same stories</p>
+      </div>
+    <% end %>
+  </main>
+</body>
+</html>
